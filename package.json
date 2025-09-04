@@ -11,6 +11,9 @@
     "backend:build": "cd backend && mvn clean package",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build",
+    "tauri:with-backend": "npm run tauri:with-backend:editor",
+    "tauri:with-backend:ps": "start-tauri-with-backend.bat",
+    "tauri:with-backend:editor": "powershell -ExecutionPolicy Bypass -File start-tauri-with-backend-editor.ps1",
     "build": "npm run frontend:build && npm run backend:build && npm run tauri:build",
     "install:all": "npm install && cd frontend && npm install && cd ../backend && mvn dependency:resolve",
     "clean": "rimraf dist build target"
