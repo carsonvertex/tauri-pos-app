@@ -2,8 +2,8 @@ Write-Host "Starting Tauri POS App with Backend..." -ForegroundColor Green
 Write-Host ""
 
 # Set environment variables
-$env:JAVA_HOME = "$env:USERPROFILE\.jdks\ms-17.0.15"
-$env:PATH = "$env:USERPROFILE\maven\apache-maven-3.9.5\bin;$env:USERPROFILE\.cargo\bin;$env:PATH"
+$env:JAVA_HOME = "$env:USERPROFILE\.jdks\corretto-17.0.12"
+$env:PATH = "$env:USERPROFILE\.jdks\corretto-17.0.12\bin;$env:USERPROFILE\maven\apache-maven-3.9.5\bin;$env:USERPROFILE\.cargo\bin;$env:PATH"
 
 Write-Host "Environment variables set:" -ForegroundColor Yellow
 Write-Host "JAVA_HOME: $env:JAVA_HOME" -ForegroundColor Cyan
