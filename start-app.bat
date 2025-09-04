@@ -1,4 +1,4 @@
-@echo off
+clear@echo off
 echo Starting Tauri POS Application...
 echo.
 
