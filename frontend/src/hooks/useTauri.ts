@@ -9,25 +9,31 @@ export const useTauri = () => {
     // Check if Tauri is available
     if (typeof window !== 'undefined' && window.__TAURI__) {
       setTauriAvailable(true);
-      
-      // Check backend status when component mounts
-      checkBackendStatus();
-    } else {
-      console.log('Tauri not available, running in browser mode');
-      // Set default status for browser mode
-      setBackendStatus({ running: false, port: undefined });
     }
+    
+    // Check backend status when component mounts
+    checkBackendStatus();
+    
+    // Set up periodic status check every 5 seconds
+    const interval = setInterval(checkBackendStatus, 5000);
+    
+    return () => clearInterval(interval);
   }, []);
 
   const checkBackendStatus = async () => {
-    if (!tauriAvailable) return;
-    
     try {
-      // Only try to invoke if Tauri is available
-      if (typeof window !== 'undefined' && window.__TAURI__) {
-        const { invoke } = await import('@tauri-apps/api/tauri');
-        const status = await invoke('get_backend_status');
-        setBackendStatus(status as BackendStatus);
+      // Check backend status by making HTTP request to Spring Boot
+      const response = await fetch('http://localhost:8080/api/pos/health', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (response.ok) {
+        setBackendStatus({ running: true, port: 8080 });
+      } else {
+        setBackendStatus({ running: false, port: undefined });
       }
     } catch (error) {
       console.error('Failed to get backend status:', error);
@@ -37,28 +43,18 @@ export const useTauri = () => {
   };
 
   const startBackend = async () => {
-    if (!tauriAvailable) return;
-    
     try {
-      if (typeof window !== 'undefined' && window.__TAURI__) {
-        const { invoke } = await import('@tauri-apps/api/tauri');
-        const status = await invoke('start_backend');
-        setBackendStatus(status as BackendStatus);
-      }
+      // For now, just check the status since we can't start backend from frontend
+      await checkBackendStatus();
     } catch (error) {
       console.error('Failed to start backend:', error);
     }
   };
 
   const stopBackend = async () => {
-    if (!tauriAvailable) return;
-    
     try {
-      if (typeof window !== 'undefined' && window.__TAURI__) {
-        const { invoke } = await import('@tauri-apps/api/tauri');
-        const status = await invoke('stop_backend');
-        setBackendStatus(status as BackendStatus);
-      }
+      // For now, just check the status since we can't stop backend from frontend
+      await checkBackendStatus();
     } catch (error) {
       console.error('Failed to stop backend:', error);
     }
