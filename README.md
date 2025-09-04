@@ -42,14 +42,14 @@ A professional Point of Sale (POS) system built with Tauri, React, and Spring Bo
 
 ```
 tauri-pos-app/
-├── setup-gui.ps1                 ← **NEW: Beautiful GUI setup (most user-friendly)**
-├── setup-gui.bat                 ← **NEW: GUI setup batch wrapper**
-├── setup.ps1                     ← **NEW: Smart command-line setup script**
-├── setup.bat                     ← **NEW: Command-line setup batch wrapper**
-├── SETUP_GUIDE.md               ← **NEW: Comprehensive setup guide**
-├── install-dependencies.bat      ← **Legacy: Install dependencies**
-├── pos-launcher.bat              ← **Legacy: Launch the app**
-├── pos-launcher-gui.ps1          ← **Legacy: Beautiful GUI launcher**
+├── setup-gui.ps1                 ← **Beautiful GUI setup (most user-friendly)**
+├── setup-gui.bat                 ← **GUI setup batch wrapper**
+├── setup.ps1                     ← **Smart command-line setup script**
+├── setup.bat                     ← **Command-line setup batch wrapper**
+├── SETUP_GUIDE.md               ← **Comprehensive setup guide**
+├── README.md                     ← **This file - main documentation**
+├── package.json                  ← **Project configuration**
+├── start-tauri-with-backend-editor.ps1 ← **Backend startup script (required)**
 ├── backend/                      ← Spring Boot backend
 ├── frontend/                     ← React + Tauri frontend
 └── tauri/                        ← Tauri configuration
