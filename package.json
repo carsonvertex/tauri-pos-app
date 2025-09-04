@@ -1,0 +1,33 @@
+{
+  "name": "tauri-pos-app",
+  "version": "1.0.0",
+  "description": "Tauri POS Application with React TypeScript frontend and Spring Boot backend",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run frontend:dev\" \"npm run backend:dev\"",
+    "frontend:dev": "cd frontend && npm run dev",
+    "frontend:build": "cd frontend && npm run build",
+    "backend:dev": "cd backend && mvn spring-boot:run",
+    "backend:build": "cd backend && mvn clean package",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build",
+    "build": "npm run frontend:build && npm run backend:build && npm run tauri:build",
+    "install:all": "npm install && cd frontend && npm install && cd ../backend && mvn dependency:resolve",
+    "clean": "rimraf dist build target"
+  },
+  "keywords": [
+    "tauri",
+    "react",
+    "typescript",
+    "spring-boot",
+    "pos",
+    "desktop"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "@tauri-apps/cli": "^1.5.0",
+    "concurrently": "^8.2.2",
+    "rimraf": "^5.0.10"
+  }
+}
