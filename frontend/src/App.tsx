@@ -6,7 +6,15 @@ import './App.css';
 
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
-  const { backendStatus, tauriAvailable, startBackend, stopBackend } = useTauri();
+  const { 
+    backendStatus, 
+    tauriAvailable, 
+    isOnline, 
+    syncStatus, 
+    startBackend, 
+    stopBackend, 
+    forceSync 
+  } = useTauri();
 
   const renderActivePage = () => {
     switch (activeTab) {
@@ -30,8 +38,11 @@ function App() {
       <Header
         backendStatus={backendStatus}
         tauriAvailable={tauriAvailable}
+        isOnline={isOnline}
+        syncStatus={syncStatus}
         onStartBackend={startBackend}
         onStopBackend={stopBackend}
+        onForceSync={forceSync}
       />
       
       <Navigation 

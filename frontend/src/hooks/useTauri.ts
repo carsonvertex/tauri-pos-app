@@ -4,6 +4,8 @@ import type { BackendStatus } from '../types';
 export const useTauri = () => {
   const [backendStatus, setBackendStatus] = useState<BackendStatus>({ running: false });
   const [tauriAvailable, setTauriAvailable] = useState(false);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [syncStatus, setSyncStatus] = useState<any | null>(null);
 
   useEffect(() => {
     // Check if Tauri is available
@@ -11,13 +13,28 @@ export const useTauri = () => {
       setTauriAvailable(true);
     }
     
+    // Set up online/offline listeners
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    
     // Check backend status when component mounts
     checkBackendStatus();
+    checkSyncStatus();
     
     // Set up periodic status check every 5 seconds
-    const interval = setInterval(checkBackendStatus, 5000);
+    const interval = setInterval(() => {
+      checkBackendStatus();
+      checkSyncStatus();
+    }, 5000);
     
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
   }, []);
 
   const checkBackendStatus = async () => {
@@ -42,6 +59,24 @@ export const useTauri = () => {
     }
   };
 
+  const checkSyncStatus = async () => {
+    try {
+      const response = await fetch('http://localhost:8080/api/offline/sync/status', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (response.ok) {
+        const status = await response.json();
+        setSyncStatus(status);
+      }
+    } catch (error) {
+      console.error('Failed to get sync status:', error);
+    }
+  };
+
   const startBackend = async () => {
     try {
       // For now, just check the status since we can't start backend from frontend
@@ -60,11 +95,34 @@ export const useTauri = () => {
     }
   };
 
+  const forceSync = async () => {
+    try {
+      const response = await fetch('http://localhost:8080/api/offline/sync/force', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (response.ok) {
+        await checkSyncStatus();
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Failed to force sync:', error);
+      return false;
+    }
+  };
+
   return {
     backendStatus,
     tauriAvailable,
+    isOnline,
+    syncStatus,
     startBackend,
     stopBackend,
-    checkBackendStatus
+    checkBackendStatus,
+    forceSync
   };
 };

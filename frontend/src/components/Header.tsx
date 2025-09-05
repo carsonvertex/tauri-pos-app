@@ -1,18 +1,25 @@
 import React from 'react';
-import { BackendStatus } from '../types';
+import { BackendStatus, SyncStatusSummary } from '../types';
+import { OfflineStatus } from './OfflineStatus';
 
 interface HeaderProps {
   backendStatus: BackendStatus;
   tauriAvailable: boolean;
+  isOnline: boolean;
+  syncStatus: SyncStatusSummary | null;
   onStartBackend: () => void;
   onStopBackend: () => void;
+  onForceSync: () => Promise<boolean>;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   backendStatus,
   tauriAvailable,
+  isOnline,
+  syncStatus,
   onStartBackend,
-  onStopBackend
+  onStopBackend,
+  onForceSync
 }) => {
   return (
     <header className="app-header">
@@ -46,6 +53,15 @@ export const Header: React.FC<HeaderProps> = ({
             <span style={{ color: '#ffa500' }}>⚠️ Running in browser mode</span>
           </div>
         )}
+      </div>
+      
+      {/* Offline Status */}
+      <div className="offline-status">
+        <OfflineStatus 
+          isOnline={isOnline}
+          syncStatus={syncStatus}
+          onForceSync={onForceSync}
+        />
       </div>
     </header>
   );

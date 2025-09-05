@@ -6,7 +6,7 @@ Add-Type -AssemblyName System.Drawing
 # Create main form
 $form = New-Object System.Windows.Forms.Form
 $form.Text = "Tauri POS App Setup & Launcher"
-$form.Size = New-Object System.Drawing.Size(700, 600)
+$form.Size = New-Object System.Drawing.Size(700, 630)
 $form.StartPosition = "CenterScreen"
 $form.FormBorderStyle = "FixedSingle"
 $form.MaximizeBox = $false
@@ -27,7 +27,7 @@ $form.Controls.Add($titleLabel)
 $statusGroupBox = New-Object System.Windows.Forms.GroupBox
 $statusGroupBox.Text = "System Status"
 $statusGroupBox.Font = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
-$statusGroupBox.Size = New-Object System.Drawing.Size(680, 200)
+$statusGroupBox.Size = New-Object System.Drawing.Size(680, 230)
 $statusGroupBox.Location = New-Object System.Drawing.Point(10, 100)
 $statusGroupBox.ForeColor = [System.Drawing.Color]::FromArgb(0, 255, 127)
 $form.Controls.Add($statusGroupBox)
@@ -93,12 +93,24 @@ $depsIndicator.Size = New-Object System.Drawing.Size(20, 20)
 $depsIndicator.Location = New-Object System.Drawing.Point(180, 150)
 $statusGroupBox.Controls.Add($depsIndicator)
 
+$sqliteStatusLabel = New-Object System.Windows.Forms.Label
+$sqliteStatusLabel.Text = "SQLite CLI"
+$sqliteStatusLabel.Font = New-Object System.Drawing.Font("Segoe UI", 10)
+$sqliteStatusLabel.Size = New-Object System.Drawing.Size(150, 25)
+$sqliteStatusLabel.Location = New-Object System.Drawing.Point(20, 180)
+$statusGroupBox.Controls.Add($sqliteStatusLabel)
+
+$sqliteIndicator = New-Object System.Windows.Forms.Label
+$sqliteIndicator.Size = New-Object System.Drawing.Size(20, 20)
+$sqliteIndicator.Location = New-Object System.Drawing.Point(180, 180)
+$statusGroupBox.Controls.Add($sqliteIndicator)
+
 # Progress group
 $progressGroupBox = New-Object System.Windows.Forms.GroupBox
 $progressGroupBox.Text = "Setup Progress"
 $progressGroupBox.Font = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
 $progressGroupBox.Size = New-Object System.Drawing.Size(680, 120)
-$progressGroupBox.Location = New-Object System.Drawing.Point(10, 320)
+$progressGroupBox.Location = New-Object System.Drawing.Point(10, 350)
 $progressGroupBox.ForeColor = [System.Drawing.Color]::FromArgb(0, 255, 127)
 $form.Controls.Add($progressGroupBox)
 
@@ -123,7 +135,7 @@ $buttonsGroupBox = New-Object System.Windows.Forms.GroupBox
 $buttonsGroupBox.Text = "Actions"
 $buttonsGroupBox.Font = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
 $buttonsGroupBox.Size = New-Object System.Drawing.Size(680, 80)
-$buttonsGroupBox.Location = New-Object System.Drawing.Point(10, 460)
+$buttonsGroupBox.Location = New-Object System.Drawing.Point(10, 490)
 $buttonsGroupBox.ForeColor = [System.Drawing.Color]::FromArgb(0, 255, 127)
 $form.Controls.Add($buttonsGroupBox)
 
@@ -255,11 +267,32 @@ function Check-SystemStatus {
     Update-StatusIndicator $depsIndicator $depsOk
     $progressBar.Value = 60
     
+    # Check SQLite CLI
+    $sqliteOk = Test-Command "sqlite3"
+    if (-not $sqliteOk) {
+        # Try to find SQLite in common locations
+        $sqlitePaths = @(
+            "$env:PROGRAMFILES\SQLite\bin",
+            "$env:PROGRAMFILES(X86)\SQLite\bin",
+            "$env:USERPROFILE\AppData\Local\Microsoft\WinGet\Packages\SQLite.SQLite_*\bin"
+        )
+        
+        foreach ($sqlitePath in $sqlitePaths) {
+            if (Test-Path "$sqlitePath\sqlite3.exe") {
+                $env:PATH = "$sqlitePath;$env:PATH"
+                $sqliteOk = $true
+                break
+            }
+        }
+    }
+    Update-StatusIndicator $sqliteIndicator $sqliteOk
+    $progressBar.Value = 70
+    
     $progressBar.Value = 100
     $progressLabel.Text = "System status check completed"
     
     # Enable/disable buttons
-    $allReady = $javaOk -and $mavenOk -and $rustOk -and $nodeOk -and $depsOk
+    $allReady = $javaOk -and $mavenOk -and $rustOk -and $nodeOk -and $depsOk -and $sqliteOk
     $launchButton.Enabled = $allReady
     $setupButton.Enabled = -not $allReady
     
@@ -472,7 +505,46 @@ function Setup-Environment {
         
         Update-StatusIndicator $depsIndicator $true
         
-        # Step 5: Test backend compilation
+        # Step 5: Install SQLite CLI if not found
+        $progressBar.Value = 80
+        $progressLabel.Text = "Checking SQLite CLI installation..."
+        
+        if (-not (Test-Command "sqlite3")) {
+            $progressLabel.Text = "Installing SQLite CLI..."
+            
+            # Try to install SQLite using winget
+            try {
+                winget install SQLite.SQLite --accept-package-agreements --accept-source-agreements --silent
+                
+                # Update PATH to include SQLite
+                $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("PATH","User")
+                
+                # Test if SQLite is now available
+                if (Test-Command "sqlite3") {
+                    Update-StatusIndicator $sqliteIndicator $true
+                } else {
+                    throw "SQLite installation completed but command not found in PATH"
+                }
+            } catch {
+                # If winget fails, show manual installation instructions
+                $result = [System.Windows.Forms.MessageBox]::Show(
+                    "SQLite CLI not found and automatic installation failed.`n`nWould you like to install it manually?`n`nClick Yes to open download page, or No to continue without SQLite CLI.",
+                    "SQLite CLI Required",
+                    [System.Windows.Forms.MessageBoxButtons]::YesNo,
+                    [System.Windows.Forms.MessageBoxIcon]::Question
+                )
+                
+                if ($result -eq [System.Windows.Forms.DialogResult]::Yes) {
+                    Start-Process "https://www.sqlite.org/download.html"
+                }
+                
+                Update-StatusIndicator $sqliteIndicator $false
+            }
+        } else {
+            Update-StatusIndicator $sqliteIndicator $true
+        }
+        
+        # Step 6: Test backend compilation
         $progressBar.Value = 90
         $progressLabel.Text = "Testing backend compilation..."
         
