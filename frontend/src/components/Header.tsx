@@ -30,24 +30,7 @@ export const Header: React.FC<HeaderProps> = ({
         </span>
         <span>Backend: {backendStatus.running ? 'Running' : 'Stopped'}</span>
         {backendStatus.port && <span>(Port: {backendStatus.port})</span>}
-        {tauriAvailable && (
-          <div className="backend-controls">
-            <button 
-              onClick={onStartBackend}
-              disabled={backendStatus.running}
-              className="btn btn-primary"
-            >
-              Start Backend
-            </button>
-            <button 
-              onClick={onStopBackend}
-              disabled={!backendStatus.running}
-              className="btn btn-danger"
-            >
-              Stop Backend
-            </button>
-          </div>
-        )}
+        {/* Start/Stop buttons hidden for production */}
         {!tauriAvailable && (
           <div className="backend-controls">
             <span style={{ color: '#ffa500' }}>⚠️ Running in browser mode</span>

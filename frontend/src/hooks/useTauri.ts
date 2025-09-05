@@ -71,9 +71,30 @@ export const useTauri = () => {
       if (response.ok) {
         const status = await response.json();
         setSyncStatus(status);
+      } else {
+        // If sync endpoint fails, create a default status
+        setSyncStatus({
+          pendingProducts: 0,
+          pendingOrders: 0,
+          failedProducts: 0,
+          failedOrders: 0,
+          totalPending: 0,
+          totalFailed: 0,
+          totalSynced: 0
+        });
       }
     } catch (error) {
       console.error('Failed to get sync status:', error);
+      // Set default status on error
+      setSyncStatus({
+        pendingProducts: 0,
+        pendingOrders: 0,
+        failedProducts: 0,
+        failedOrders: 0,
+        totalPending: 0,
+        totalFailed: 0,
+        totalSynced: 0
+      });
     }
   };
 

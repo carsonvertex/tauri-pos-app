@@ -73,20 +73,24 @@ export interface LocalOrderItem {
   updatedAt: string;
 }
 
-export enum SyncStatus {
-  PENDING = 'PENDING',
-  SYNCING = 'SYNCING',
-  SYNCED = 'SYNCED',
-  FAILED = 'FAILED',
-  CONFLICT = 'CONFLICT'
-}
+export const SyncStatus = {
+  PENDING: 'PENDING',
+  SYNCING: 'SYNCING',
+  SYNCED: 'SYNCED',
+  FAILED: 'FAILED',
+  CONFLICT: 'CONFLICT'
+} as const;
 
-export enum OrderStatus {
-  PENDING = 'PENDING',
-  COMPLETED = 'COMPLETED',
-  CANCELLED = 'CANCELLED',
-  REFUNDED = 'REFUNDED'
-}
+export type SyncStatus = typeof SyncStatus[keyof typeof SyncStatus];
+
+export const OrderStatus = {
+  PENDING: 'PENDING',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED',
+  REFUNDED: 'REFUNDED'
+} as const;
+
+export type OrderStatus = typeof OrderStatus[keyof typeof OrderStatus];
 
 export interface SyncStatusSummary {
   pendingProducts: number;

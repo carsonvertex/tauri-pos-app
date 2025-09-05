@@ -1,5 +1,5 @@
 import React from 'react';
-import { SyncStatus, SyncStatusSummary } from '../types';
+import { SyncStatusSummary } from '../types';
 
 interface OfflineStatusProps {
   isOnline: boolean;
