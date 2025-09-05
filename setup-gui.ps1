@@ -180,40 +180,78 @@ function Check-SystemStatus {
     $progressLabel.Text = "Checking system status..."
     $progressBar.Value = 10
     
-    # Check Java
-    $javaOk = Test-Command "java"
+    # Check Java using auto-detection
+    $javaHome = Find-Java
+    $javaOk = $null -ne $javaHome
     if ($javaOk) {
-        try {
-            $javaVersion = java -version 2>&1 | Select-String "version"
-            if ($javaVersion -match "17|18|19|20|21") {
-                $javaOk = $true
-            } else {
-                $javaOk = $false
-            }
-        } catch {
-            $javaOk = $false
-        }
+        $env:JAVA_HOME = $javaHome
+        $env:PATH = "$javaHome\bin;$env:PATH"
     }
     Update-StatusIndicator $javaIndicator $javaOk
     $progressBar.Value = 20
     
-    # Check Maven
-    $mavenOk = Test-Command "mvn"
+    # Check Maven using auto-detection
+    $mavenBin = Find-Maven
+    $mavenOk = $null -ne $mavenBin
+    if ($mavenOk) {
+        $env:PATH = "$mavenBin;$env:PATH"
+    }
     Update-StatusIndicator $mavenIndicator $mavenOk
     $progressBar.Value = 30
     
-    # Check Rust
+    # Check Rust - also add to PATH if found
     $rustOk = Test-Command "cargo"
+    if (-not $rustOk) {
+        # Try to find Rust in common locations
+        $rustPaths = @(
+            "$env:USERPROFILE\.cargo\bin",
+            "$env:PROGRAMFILES\Rust stable MSVC 64-bit\bin",
+            "$env:PROGRAMFILES(X86)\Rust stable MSVC 64-bit\bin"
+        )
+        
+        foreach ($rustPath in $rustPaths) {
+            if (Test-Path "$rustPath\cargo.exe") {
+                $env:PATH = "$rustPath;$env:PATH"
+                $rustOk = $true
+                break
+            }
+        }
+    }
     Update-StatusIndicator $rustIndicator $rustOk
     $progressBar.Value = 40
     
-    # Check Node.js
-    $nodeOk = (Test-Command "node") -and (Test-Command "npm")
+    # Check Node.js using auto-detection
+    $nodeDir = Find-NodeJS
+    $nodeOk = $null -ne $nodeDir
+    if ($nodeOk) {
+        $env:PATH = "$nodeDir;$env:PATH"
+    }
     Update-StatusIndicator $nodeIndicator $nodeOk
     $progressBar.Value = 50
     
-    # Check dependencies
+    # Check dependencies - try to install if missing
     $depsOk = (Test-Path "node_modules") -and (Test-Path "frontend/node_modules")
+    if (-not $depsOk) {
+        # Try to install dependencies if Node.js is available
+        if ($nodeOk) {
+            try {
+                if (-not (Test-Path "node_modules")) {
+                    Write-Host "Installing root dependencies..." -ForegroundColor Yellow
+                    npm install --silent | Out-Null
+                }
+                if (-not (Test-Path "frontend/node_modules")) {
+                    Write-Host "Installing frontend dependencies..." -ForegroundColor Yellow
+                    Set-Location frontend
+                    npm install --silent | Out-Null
+                    Set-Location ..
+                }
+                $depsOk = (Test-Path "node_modules") -and (Test-Path "frontend/node_modules")
+            } catch {
+                # Installation failed, but that's okay - user can run setup
+                $depsOk = $false
+            }
+        }
+    }
     Update-StatusIndicator $depsIndicator $depsOk
     $progressBar.Value = 60
     
@@ -236,6 +274,147 @@ function Check-SystemStatus {
     return $allReady
 }
 
+# Auto-detection functions (integrated from detect-env.ps1)
+function Find-NodeJS {
+    # Check if node and npm are in PATH
+    try {
+        $nodeVersion = node --version 2>&1
+        $npmVersion = npm --version 2>&1
+        if ($nodeVersion -match "v\d+" -and $npmVersion -match "\d+") {
+            $nodePath = (Get-Command node -ErrorAction SilentlyContinue).Source
+            $nodeDir = Split-Path $nodePath -Parent
+            return $nodeDir
+        }
+    } catch {
+        # Node.js not in PATH, continue searching
+    }
+    
+    # Search common locations
+    $searchPaths = @(
+        "$env:PROGRAMFILES\nodejs",
+        "$env:PROGRAMFILES(X86)\nodejs",
+        "$env:LOCALAPPDATA\Programs\nodejs",
+        "$env:APPDATA\npm"
+    )
+    
+    foreach ($basePath in $searchPaths) {
+        if (Test-Path $basePath) {
+            if ((Test-Path "$basePath\node.exe") -and (Test-Path "$basePath\npm.cmd")) {
+                try {
+                    $nodeVersion = & "$basePath\node.exe" --version 2>&1
+                    $npmVersion = & "$basePath\npm.cmd" --version 2>&1
+                    if ($nodeVersion -match "v\d+" -and $npmVersion -match "\d+") {
+                        return $basePath
+                    }
+                } catch {
+                    continue
+                }
+            }
+        }
+    }
+    
+    return $null
+}
+
+function Find-Java {
+    # Check if JAVA_HOME is already set and working
+    if ($env:JAVA_HOME -and (Test-Path "$env:JAVA_HOME\bin\java.exe")) {
+        try {
+            $version = & "$env:JAVA_HOME\bin\java.exe" -version 2>&1 | Select-String "version"
+            if ($version -match "17|18|19|20|21|22|23|24") {
+                return $env:JAVA_HOME
+            }
+        } catch {
+            # JAVA_HOME is set but not working, continue searching
+        }
+    }
+    
+    # Check if java is in PATH
+    try {
+        $version = java -version 2>&1 | Select-String "version"
+        if ($version -match "17|18|19|20|21|22|23|24") {
+            $javaPath = (Get-Command java -ErrorAction SilentlyContinue).Source
+            $javaHome = Split-Path (Split-Path $javaPath -Parent) -Parent
+            return $javaHome
+        }
+    } catch {
+        # Java not in PATH, continue searching
+    }
+    
+    # Search common locations
+    $searchPaths = @(
+        "$env:USERPROFILE\.jdks",
+        "$env:PROGRAMFILES\Java",
+        "$env:PROGRAMFILES(X86)\Java",
+        "$env:LOCALAPPDATA\Programs\Java"
+    )
+    
+    foreach ($basePath in $searchPaths) {
+        if (Test-Path $basePath) {
+            $javaDirs = Get-ChildItem -Path $basePath -Directory -ErrorAction SilentlyContinue | Where-Object { 
+                $_.Name -match "(jdk|jre|corretto|openjdk|ms-)" -and 
+                (Test-Path "$($_.FullName)\bin\java.exe")
+            }
+            
+            foreach ($javaDir in $javaDirs) {
+                try {
+                    $version = & "$($javaDir.FullName)\bin\java.exe" -version 2>&1 | Select-String "version"
+                    if ($version -match "17|18|19|20|21|22|23|24") {
+                        return $javaDir.FullName
+                    }
+                } catch {
+                    continue
+                }
+            }
+        }
+    }
+    
+    return $null
+}
+
+function Find-Maven {
+    # Check if mvn is in PATH
+    try {
+        $version = mvn -version 2>&1 | Select-String "Apache Maven"
+        if ($version) {
+            $mvnPath = (Get-Command mvn -ErrorAction SilentlyContinue).Source
+            $mavenHome = Split-Path (Split-Path $mvnPath -Parent) -Parent
+            return "$mavenHome\bin"
+        }
+    } catch {
+        # Maven not in PATH, continue searching
+    }
+    
+    # Search common locations
+    $searchPaths = @(
+        "$env:USERPROFILE\maven",
+        "$env:PROGRAMFILES\Apache\maven",
+        "$env:PROGRAMFILES(X86)\Apache\maven"
+    )
+    
+    foreach ($basePath in $searchPaths) {
+        if (Test-Path $basePath) {
+            $mavenDirs = Get-ChildItem -Path $basePath -Directory -ErrorAction SilentlyContinue | Where-Object { 
+                $_.Name -match "apache-maven" -and 
+                (Test-Path "$($_.FullName)\bin\mvn.cmd")
+            }
+            
+            foreach ($mavenDir in $mavenDirs) {
+                try {
+                    $version = & "$($mavenDir.FullName)\bin\mvn.cmd" -version 2>&1 | Select-String "Apache Maven"
+                    if ($version) {
+                        return "$($mavenDir.FullName)\bin"
+                    }
+                } catch {
+                    continue
+                }
+            }
+        }
+    }
+    
+    return $null
+}
+
 function Setup-Environment {
     $setupButton.Enabled = $false
     $progressBar.Value = 0
@@ -246,32 +425,7 @@ function Setup-Environment {
         $progressBar.Value = 10
         $progressLabel.Text = "Detecting Java installation..."
         
-        $javaHome = $null
-        if ($env:JAVA_HOME) {
-            $javaHome = $env:JAVA_HOME
-        } else {
-            $possiblePaths = @(
-                "$env:USERPROFILE\.jdks",
-                "$env:PROGRAMFILES\Java",
-                "$env:PROGRAMFILES(X86)\Java",
-                "$env:LOCALAPPDATA\Programs\Java"
-            )
-            
-            foreach ($basePath in $possiblePaths) {
-                if (Test-Path $basePath) {
-                    $javaDirs = Get-ChildItem -Path $basePath -Directory | Where-Object { 
-                        $_.Name -match "(jdk|jre|corretto|openjdk|ms-)" -and 
-                        (Test-Path "$($_.FullName)\bin\java.exe")
-                    }
-                    
-                    if ($javaDirs) {
-                        $javaHome = $javaDirs[0].FullName
-                        break
-                    }
-                }
-            }
-        }
-        
+        $javaHome = Find-Java
         if ($javaHome) {
             $env:JAVA_HOME = $javaHome
             $env:PATH = "$javaHome\bin;$env:PATH"
@@ -284,30 +438,9 @@ function Setup-Environment {
         $progressBar.Value = 30
         $progressLabel.Text = "Detecting Maven installation..."
         
-        if (-not (Test-Command "mvn")) {
-            $possiblePaths = @(
-                "$env:USERPROFILE\maven",
-                "$env:PROGRAMFILES\Apache\maven",
-                "$env:PROGRAMFILES(X86)\Apache\maven"
-            )
-            
-            foreach ($basePath in $possiblePaths) {
-                if (Test-Path $basePath) {
-                    $mavenDirs = Get-ChildItem -Path $basePath -Directory | Where-Object { 
-                        $_.Name -match "apache-maven" -and 
-                        (Test-Path "$($_.FullName)\bin\mvn.cmd")
-                    }
-                    
-                    if ($mavenDirs) {
-                        $mavenPath = "$($mavenDirs[0].FullName)\bin"
-                        $env:PATH = "$mavenPath;$env:PATH"
-                        break
-                    }
-                }
-            }
-        }
-        
-        if (Test-Command "mvn") {
+        $mavenBin = Find-Maven
+        if ($mavenBin) {
+            $env:PATH = "$mavenBin;$env:PATH"
             Update-StatusIndicator $mavenIndicator $true
         } else {
             throw "Maven installation not found. Please install Apache Maven."
