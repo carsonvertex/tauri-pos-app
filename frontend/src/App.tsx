@@ -11,8 +11,6 @@ function App() {
     tauriAvailable, 
     isOnline, 
     syncStatus, 
-    startBackend, 
-    stopBackend, 
     forceSync 
   } = useTauri();
 
@@ -35,13 +33,11 @@ function App() {
 
   return (
     <div className="app">
-      <Header
+            <Header 
         backendStatus={backendStatus}
         tauriAvailable={tauriAvailable}
         isOnline={isOnline}
         syncStatus={syncStatus}
-        onStartBackend={startBackend}
-        onStopBackend={stopBackend}
         onForceSync={forceSync}
       />
       

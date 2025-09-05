@@ -7,8 +7,6 @@ interface HeaderProps {
   tauriAvailable: boolean;
   isOnline: boolean;
   syncStatus: SyncStatusSummary | null;
-  onStartBackend: () => void;
-  onStopBackend: () => void;
   onForceSync: () => Promise<boolean>;
 }
 
@@ -17,8 +15,6 @@ export const Header: React.FC<HeaderProps> = ({
   tauriAvailable,
   isOnline,
   syncStatus,
-  onStartBackend,
-  onStopBackend,
   onForceSync
 }) => {
   return (
