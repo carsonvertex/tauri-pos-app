@@ -1,0 +1,49 @@
+{
+  "build": {
+    "beforeDevCommand": "npm run frontend:dev",
+    "beforeBuildCommand": "npm run frontend:build",
+    "devPath": "http://localhost:5173",
+    "distDir": "../frontend/dist",
+    "withGlobalTauri": false
+  },
+  "package": {
+    "productName": "Tauri POS",
+    "version": "0.1.0"
+  },
+  "tauri": {
+    "allowlist": {
+      "all": false,
+      "shell": {
+        "all": false,
+        "open": true
+      },
+      "http": {
+        "all": true,
+        "request": true,
+        "scope": ["http://localhost:5173", "http://localhost:8080", "https://*"]
+      },
+      "fs": {
+        "all": false,
+        "scope": ["$APPDATA/*", "$APPDATA/../Local/*"]
+      }
+    },
+    "bundle": {
+      "active": false,
+      "targets": "all",
+      "identifier": "com.tauri.pos"
+    },
+    "security": {
+      "csp": null
+    },
+    "windows": [
+      {
+        "fullscreen": false,
+        "maximized": true,
+        "resizable": true,
+        "title": "Tauri POS",
+        "minWidth": 800,
+        "minHeight": 600
+      }
+    ]
+  }
+}

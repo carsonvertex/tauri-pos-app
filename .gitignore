@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+target/
+*.jar
+
+# Build outputs
+dist/
+build/
+*.exe
+*.pdb
+*.d
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Portable distribution (contains large JRE files)
+dist-portable-standalone/
+dist-portable-standalone/jre/
+dist-portable-standalone/*.exe
+dist-portable-standalone/*.jar
+dist-portable-standalone/launcher-debug.log
+
+# Cargo
+Cargo.lock
+
+# Maven
+.m2/
