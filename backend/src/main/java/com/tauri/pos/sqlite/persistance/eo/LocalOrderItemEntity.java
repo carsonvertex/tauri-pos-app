@@ -2,25 +2,22 @@ package com.tauri.pos.sqlite.persistance.eo;
 
 import com.tauri.pos.shared.enums.SyncStatus;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Getter
-@Setter
+@Data
+@Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
 @Table(name = "local_order_items")
 public class LocalOrderItemEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long Id;
+    @Column(name = "id")
+    private Long id;
 
     @Column(name = "order_id", nullable = false)
     private Long orderId;
@@ -31,7 +28,7 @@ public class LocalOrderItemEntity {
     @Column(nullable = false)
     private Integer quantity;
 
-    @Column(nullable = false, precision = 10, scale = 2)
+    @Column(nullable = false)
     private BigDecimal price;
 
     @Column(name = "remote_id")
@@ -39,7 +36,7 @@ public class LocalOrderItemEntity {
 
     @Column(name = "sync_status")
     @Enumerated(EnumType.STRING)
-    private SyncStatus syncStatus = SyncStatus.PENDING;
+    private SyncStatus syncStatus;
 
     @Column(name = "last_sync")
     private LocalDateTime lastSync;

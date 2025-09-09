@@ -37,6 +37,7 @@ public class LocalOrderItemController {
     @GetMapping
     public ResponseEntity<List<LocalOrderItem>> getAllLocalOrderItems() {
         try {
+            System.out.println("getAllLocalOrderItems");
             List<LocalOrderItem> items = localOrderItemService.getAllLocalOrderItem();
             return ResponseEntity.ok(items);
         } catch (Exception e) {
