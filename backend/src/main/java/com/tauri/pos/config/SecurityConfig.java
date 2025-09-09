@@ -24,6 +24,8 @@ public class SecurityConfig {
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers("/pos/**").permitAll()
                 .requestMatchers("/api/pos/**").permitAll()
+                .requestMatchers("/offline/**").permitAll()
+                .requestMatchers("/api/offline/**").permitAll()
                 .anyRequest().authenticated()
             )
             .headers().frameOptions().disable(); // For H2 console

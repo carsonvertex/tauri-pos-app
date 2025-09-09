@@ -9,7 +9,7 @@
     "frontend:build": "cd frontend && npm run build",
     "backend:dev": "powershell -ExecutionPolicy Bypass -File backend/run-backend.ps1",
     "backend:build": "powershell -ExecutionPolicy Bypass -File backend/run-backend.ps1 -build",
-    "tauri:frontend":  "tauri dev"  ,
+    "tauri:frontend": "tauri dev",
     "tauri:dev": "concurrently \"tauri dev\" \"npm run backend:dev\"",
     "tauri:build": "tauri build",
     "tauri:with-backend": "powershell -ExecutionPolicy Bypass -File start-tauri-with-backend-editor.ps1",
@@ -30,5 +30,9 @@
     "@tauri-apps/cli": "^1.5.0",
     "concurrently": "^8.2.2",
     "rimraf": "^5.0.10"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.1.13",
+    "tailwindcss": "^4.1.13"
   }
 }

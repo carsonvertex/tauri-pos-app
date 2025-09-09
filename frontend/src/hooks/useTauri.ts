@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { invoke } from '@tauri-apps/api';
 import type { BackendStatus } from '../types';
 
 export const useTauri = () => {
@@ -6,6 +7,9 @@ export const useTauri = () => {
   const [tauriAvailable, setTauriAvailable] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [syncStatus, setSyncStatus] = useState<any | null>(null);
+  const [isRestarting, setIsRestarting] = useState(false);
+  const backendStatusRef = useRef<BackendStatus>({ running: false });
+  const intervalRef = useRef<number | null>(null);
 
   useEffect(() => {
     // Check if Tauri is available
@@ -24,14 +28,10 @@ export const useTauri = () => {
     checkBackendStatus();
     checkSyncStatus();
     
-    // Set up periodic status check every 5 seconds
-    const interval = setInterval(() => {
-      checkBackendStatus();
-      checkSyncStatus();
-    }, 5000);
-    
     return () => {
-      clearInterval(interval);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
@@ -48,14 +48,20 @@ export const useTauri = () => {
       });
       
       if (response.ok) {
-        setBackendStatus({ running: true, port: 8080 });
+        const newStatus = { running: true, port: 8080 };
+        setBackendStatus(newStatus);
+        backendStatusRef.current = newStatus;
       } else {
-        setBackendStatus({ running: false, port: undefined });
+        const newStatus = { running: false, port: undefined };
+        setBackendStatus(newStatus);
+        backendStatusRef.current = newStatus;
       }
     } catch (error) {
       console.error('Failed to get backend status:', error);
       // Set default status for development
-      setBackendStatus({ running: false, port: undefined });
+      const newStatus = { running: false, port: undefined };
+      setBackendStatus(newStatus);
+      backendStatusRef.current = newStatus;
     }
   };
 
@@ -136,14 +142,92 @@ export const useTauri = () => {
     }
   };
 
+  const manualSync = async () => {
+    try {
+      // First refresh sync status
+      await checkSyncStatus();
+      
+      // Then perform sync if there are pending items
+      if (syncStatus && (syncStatus.totalPending > 0 || syncStatus.totalFailed > 0)) {
+        return await forceSync();
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Failed to perform manual sync:', error);
+      return false;
+    }
+  };
+
+  const restartBackend = async () => {
+    if (!tauriAvailable) {
+      console.warn('Tauri not available, cannot restart backend');
+      return false;
+    }
+
+    setIsRestarting(true);
+    try {
+      // First stop the backend if it's running
+      await invoke('stop_backend');
+      
+      // Wait a moment for the process to fully stop
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Then start it again
+      const result = await invoke('start_backend') as BackendStatus;
+      
+      // Update the status
+      setBackendStatus(result);
+      backendStatusRef.current = result;
+      
+      // Wait a bit for the backend to fully start, then check sync status
+      if (result.running) {
+        setTimeout(async () => {
+          await checkSyncStatus();
+        }, 2000);
+      }
+      
+      return result.running;
+    } catch (error) {
+      console.error('Failed to restart backend:', error);
+      return false;
+    } finally {
+      setIsRestarting(false);
+    }
+  };
+
+  const manualReconnect = async () => {
+    if (tauriAvailable) {
+      // If Tauri is available, restart the backend
+      const success = await restartBackend();
+      if (success) {
+        console.log('Backend restarted successfully');
+      } else {
+        console.log('Failed to restart backend, falling back to status check');
+        await checkBackendStatus();
+      }
+    } else {
+      // Fallback to just checking status if Tauri is not available
+      await checkBackendStatus();
+    }
+    
+    if (backendStatusRef.current.running) {
+      await checkSyncStatus();
+    }
+  };
+
   return {
     backendStatus,
     tauriAvailable,
     isOnline,
     syncStatus,
+    isRestarting,
     startBackend,
     stopBackend,
+    restartBackend,
     checkBackendStatus,
-    forceSync
+    forceSync,
+    manualSync,
+    manualReconnect
   };
 };

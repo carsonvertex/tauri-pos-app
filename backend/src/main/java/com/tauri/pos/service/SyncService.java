@@ -55,10 +55,10 @@ public class SyncService {
     }
     
     /**
-     * Scheduled sync every 5 minutes
+     * Scheduled sync every 5 minutes - DISABLED
      */
-    @Scheduled(fixedRateString = "${sync.interval:300000}")
-    @Async
+    // @Scheduled(fixedRateString = "${sync.interval:300000}")
+    // @Async
     public void performScheduledSync() {
         logger.info("Starting scheduled sync...");
         try {

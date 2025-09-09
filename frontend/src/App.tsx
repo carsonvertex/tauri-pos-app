@@ -11,7 +11,10 @@ function App() {
     tauriAvailable, 
     isOnline, 
     syncStatus, 
-    forceSync 
+    isRestarting,
+    forceSync,
+    manualSync,
+    manualReconnect
   } = useTauri();
 
   const renderActivePage = () => {
@@ -38,7 +41,10 @@ function App() {
         tauriAvailable={tauriAvailable}
         isOnline={isOnline}
         syncStatus={syncStatus}
+        isRestarting={isRestarting}
         onForceSync={forceSync}
+        onManualSync={manualSync}
+        onManualReconnect={manualReconnect}
       />
       
       <Navigation 
