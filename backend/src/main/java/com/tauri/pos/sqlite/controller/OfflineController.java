@@ -1,11 +1,11 @@
-package com.tauri.pos.controller;
+package com.tauri.pos.sqlite.controller;
 
-import com.tauri.pos.model.local.LocalOrder;
-import com.tauri.pos.model.local.LocalProduct;
-import com.tauri.pos.model.local.OrderStatus;
-import com.tauri.pos.service.OfflineService;
-import com.tauri.pos.service.OfflineService.OrderItemRequest;
-import com.tauri.pos.service.OfflineService.SyncStatusSummary;
+import com.tauri.pos.sqlite.model.LocalOrder;
+import com.tauri.pos.sqlite.model.LocalProduct;
+import com.tauri.pos.shared.enums.OrderStatus;
+import com.tauri.pos.sqlite.service.OfflineService;
+import com.tauri.pos.sqlite.service.OfflineService.OrderItemRequest;
+import com.tauri.pos.sqlite.service.OfflineService.SyncStatusSummary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

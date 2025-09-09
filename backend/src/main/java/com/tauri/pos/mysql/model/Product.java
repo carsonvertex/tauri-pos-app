@@ -1,4 +1,4 @@
-package com.tauri.pos.model;
+package com.tauri.pos.mysql.model;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;

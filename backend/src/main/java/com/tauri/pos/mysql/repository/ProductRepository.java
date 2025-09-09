@@ -1,6 +1,6 @@
-package com.tauri.pos.repository;
+package com.tauri.pos.mysql.repository;
 
-import com.tauri.pos.model.Product;
+import com.tauri.pos.mysql.model.Product;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

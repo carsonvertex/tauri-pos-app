@@ -1,7 +1,7 @@
-package com.tauri.pos.repository.local;
+package com.tauri.pos.sqlite.repository;
 
-import com.tauri.pos.model.local.LocalProduct;
-import com.tauri.pos.model.local.SyncStatus;
+import com.tauri.pos.sqlite.model.LocalProduct;
+import com.tauri.pos.shared.enums.SyncStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

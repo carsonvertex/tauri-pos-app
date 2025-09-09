@@ -1,5 +1,7 @@
-package com.tauri.pos.model.local;
+package com.tauri.pos.sqlite.model;
 
+import com.tauri.pos.shared.enums.OrderStatus;
+import com.tauri.pos.shared.enums.SyncStatus;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

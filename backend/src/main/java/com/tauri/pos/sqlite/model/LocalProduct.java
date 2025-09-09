@@ -1,30 +1,29 @@
-package com.tauri.pos.model.local;
+package com.tauri.pos.sqlite.model;
 
+import com.tauri.pos.shared.enums.SyncStatus;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "local_order_items")
-public class LocalOrderItem {
+@Table(name = "local_products")
+public class LocalProduct {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id", nullable = false)
-    private LocalOrder order;
-    
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false)
-    private LocalProduct product;
-    
-    @Column(nullable = false)
-    private Integer quantity;
+    @Column(unique = true, nullable = false)
+    private String name;
     
     @Column(nullable = false)
     private BigDecimal price;
+    
+    @Column(nullable = false)
+    private Integer stock;
+    
+    private String description;
+    private String category;
     
     @Column(name = "remote_id")
     private Long remoteId; // ID from remote database
@@ -43,30 +42,32 @@ public class LocalOrderItem {
     private LocalDateTime updatedAt = LocalDateTime.now();
     
     // Constructors
-    public LocalOrderItem() {}
+    public LocalProduct() {}
     
-    public LocalOrderItem(LocalOrder order, LocalProduct product, Integer quantity, BigDecimal price) {
-        this.order = order;
-        this.product = product;
-        this.quantity = quantity;
+    public LocalProduct(String name, BigDecimal price, Integer stock) {
+        this.name = name;
         this.price = price;
+        this.stock = stock;
     }
     
     // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     
-    public LocalOrder getOrder() { return order; }
-    public void setOrder(LocalOrder order) { this.order = order; }
-    
-    public LocalProduct getProduct() { return product; }
-    public void setProduct(LocalProduct product) { this.product = product; }
-    
-    public Integer getQuantity() { return quantity; }
-    public void setQuantity(Integer quantity) { this.quantity = quantity; }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
     
     public BigDecimal getPrice() { return price; }
     public void setPrice(BigDecimal price) { this.price = price; }
+    
+    public Integer getStock() { return stock; }
+    public void setStock(Integer stock) { this.stock = stock; }
+    
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+    
+    public String getCategory() { return category; }
+    public void setCategory(String category) { this.category = category; }
     
     public Long getRemoteId() { return remoteId; }
     public void setRemoteId(Long remoteId) { this.remoteId = remoteId; }

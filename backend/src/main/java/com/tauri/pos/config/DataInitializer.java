@@ -1,6 +1,6 @@
 package com.tauri.pos.config;
 
-import com.tauri.pos.service.PosService;
+import com.tauri.pos.mysql.service.PosService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;

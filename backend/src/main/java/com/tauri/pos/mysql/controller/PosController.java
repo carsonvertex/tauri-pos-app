@@ -1,8 +1,8 @@
-package com.tauri.pos.controller;
+package com.tauri.pos.mysql.controller;
 
-import com.tauri.pos.model.Product;
-import com.tauri.pos.model.Order;
-import com.tauri.pos.service.PosService;
+import com.tauri.pos.mysql.model.Product;
+import com.tauri.pos.mysql.model.Order;
+import com.tauri.pos.mysql.service.PosService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

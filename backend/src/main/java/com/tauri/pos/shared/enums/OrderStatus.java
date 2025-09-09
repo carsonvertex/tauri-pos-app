@@ -1,4 +1,4 @@
-package com.tauri.pos.model.local;
+package com.tauri.pos.shared.enums;
 
 public enum OrderStatus {
     PENDING,    // Order created but not completed

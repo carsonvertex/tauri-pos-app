@@ -1,12 +1,13 @@
-package com.tauri.pos.service;
+package com.tauri.pos.sync.service;
 
-import com.tauri.pos.model.local.*;
-import com.tauri.pos.repository.local.LocalOrderRepository;
-import com.tauri.pos.repository.local.LocalProductRepository;
-import com.tauri.pos.repository.OrderRepository;
-import com.tauri.pos.repository.ProductRepository;
-import com.tauri.pos.model.Order;
-import com.tauri.pos.model.Product;
+import com.tauri.pos.sqlite.model.*;
+import com.tauri.pos.sqlite.repository.LocalOrderRepository;
+import com.tauri.pos.sqlite.repository.LocalProductRepository;
+import com.tauri.pos.mysql.repository.OrderRepository;
+import com.tauri.pos.mysql.repository.ProductRepository;
+import com.tauri.pos.mysql.model.Order;
+import com.tauri.pos.mysql.model.Product;
+import com.tauri.pos.shared.enums.SyncStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
