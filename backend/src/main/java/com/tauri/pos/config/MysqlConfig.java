@@ -41,8 +41,7 @@ public class MysqlConfig {
         properties.put("hibernate.hbm2ddl.auto", "update");
         properties.put("hibernate.show_sql", "true");
         properties.put("hibernate.format_sql", "true");
-        properties.put("hibernate.connection.provider_disables_autocommit", "true");
-        
+
         return builder
                 .dataSource(dataSource)
                 .packages("com.tauri.pos.mysql.persistance.eo")

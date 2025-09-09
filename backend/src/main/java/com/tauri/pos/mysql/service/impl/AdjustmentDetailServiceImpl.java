@@ -7,13 +7,13 @@ import com.tauri.pos.mysql.persistance.eo.AdjustmentDetailEntity;
 import com.tauri.pos.mysql.service.AdjustmentDetailService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-@Transactional(transactionManager = "mysqlTransactionManager")
 @ConditionalOnProperty(name = "spring.datasource.mysql.jdbc-url")
 public class AdjustmentDetailServiceImpl implements AdjustmentDetailService {
     private final AdjustmentDetailDao adjustmentDetailDao;
@@ -23,6 +23,7 @@ public class AdjustmentDetailServiceImpl implements AdjustmentDetailService {
     }
 
     @Override
+    @Transactional(transactionManager = "mysqlTransactionManager")
     public AdjustmentDetail createAdjustmentDetail(AdjustmentDetail adjustmentDetail) {
         AdjustmentDetailEntity entity = AdjustmentDetailMapper.INSTANCE.adjustmentDetailToAdjustmentDetailEntity(adjustmentDetail);
         entity.setCreatedAt(LocalDateTime.now());
@@ -33,6 +34,7 @@ public class AdjustmentDetailServiceImpl implements AdjustmentDetailService {
     }
 
     @Override
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public List<AdjustmentDetail> getAllAdjustmentDetails() {
         return adjustmentDetailDao.findAll().stream()
                 .map(AdjustmentDetailMapper.INSTANCE::adjustmentDetailEntityToAdjustmentDetail)
@@ -40,6 +42,7 @@ public class AdjustmentDetailServiceImpl implements AdjustmentDetailService {
     }
 
     @Override
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public AdjustmentDetail getAdjustmentDetailById(Long adjustmentDetailId) {
         AdjustmentDetail adjustmentDetail = adjustmentDetailDao.findById(adjustmentDetailId)
                 .map(AdjustmentDetailMapper.INSTANCE::adjustmentDetailEntityToAdjustmentDetail)
@@ -49,6 +52,7 @@ public class AdjustmentDetailServiceImpl implements AdjustmentDetailService {
     }
 
     @Override
+    @Transactional(transactionManager = "mysqlTransactionManager")
     public AdjustmentDetail updateAdjustmentDetailById(Long adjustmentDetailId, AdjustmentDetail adjustmentDetail) {
         return adjustmentDetailDao.findById(adjustmentDetailId)
                 .map(entity -> {
@@ -61,6 +65,7 @@ public class AdjustmentDetailServiceImpl implements AdjustmentDetailService {
     }
 
     @Override
+    @Transactional(transactionManager = "mysqlTransactionManager")
     public void deleteAdjustmentDetailById(Long adjustmentDetailId) {
         adjustmentDetailDao.findById(adjustmentDetailId)
                 .map(entity -> {
@@ -70,6 +75,7 @@ public class AdjustmentDetailServiceImpl implements AdjustmentDetailService {
     }
 
     @Override
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public List<AdjustmentDetail> getAdjustmentDetailsByAdjustmentId(Long adjustmentId) {
         return adjustmentDetailDao.findByAdjustmentId(adjustmentId).stream()
                 .map(AdjustmentDetailMapper.INSTANCE::adjustmentDetailEntityToAdjustmentDetail)
@@ -77,6 +83,7 @@ public class AdjustmentDetailServiceImpl implements AdjustmentDetailService {
     }
 
     @Override
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public List<AdjustmentDetail> getAdjustmentDetailsByProductId(Long productId) {
         return adjustmentDetailDao.findByProductId(productId).stream()
                 .map(AdjustmentDetailMapper.INSTANCE::adjustmentDetailEntityToAdjustmentDetail)
@@ -84,6 +91,7 @@ public class AdjustmentDetailServiceImpl implements AdjustmentDetailService {
     }
 
     @Override
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public List<AdjustmentDetail> getAdjustmentDetailsByWarehouseId(Long warehouseId) {
         return adjustmentDetailDao.findByWarehouseId(warehouseId).stream()
                 .map(AdjustmentDetailMapper.INSTANCE::adjustmentDetailEntityToAdjustmentDetail)
@@ -91,6 +99,7 @@ public class AdjustmentDetailServiceImpl implements AdjustmentDetailService {
     }
 
     @Override
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public List<AdjustmentDetail> getAdjustmentDetailsByBinId(Long binId) {
         return adjustmentDetailDao.findByBinId(binId).stream()
                 .map(AdjustmentDetailMapper.INSTANCE::adjustmentDetailEntityToAdjustmentDetail)

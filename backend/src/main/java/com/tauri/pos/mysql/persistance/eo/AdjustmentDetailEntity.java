@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "adjustment_detail")
+
 public class AdjustmentDetailEntity {
 
     @Id

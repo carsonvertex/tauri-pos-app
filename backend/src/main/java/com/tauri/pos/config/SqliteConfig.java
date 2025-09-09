@@ -44,7 +44,7 @@ public class SqliteConfig {
         properties.put("hibernate.hbm2ddl.auto", "update");
         properties.put("hibernate.show_sql", "true");
         properties.put("hibernate.format_sql", "true");
-        
+
         return builder
                 .dataSource(dataSource)
                 .packages("com.tauri.pos.sqlite.persistance.eo")

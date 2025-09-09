@@ -52,18 +52,19 @@ public class AdjustmentDetailController {
      */
     @GetMapping("/{id}")
     public ResponseEntity<AdjustmentDetail> getAdjustmentDetailById(@PathVariable Long id) {
-        System.out.println("getAllAdjustmentDetailsById");
+        System.out.println("getAdjustmentDetailById for ID: " + id);
         try {
             AdjustmentDetail detail = adjustmentDetailService.getAdjustmentDetailById(id);
             if (detail != null) {
                 System.out.println("Returned detail: " + detail);
                 return ResponseEntity.ok(detail);
             } else {
-                System.out.println("Not Found");
+                System.out.println("AdjustmentDetail not found for ID: " + id);
                 return ResponseEntity.notFound().build();
             }
         } catch (Exception e) {
-            System.out.println("Internal Server Error");
+            System.out.println("Internal Server Error for ID " + id + ": " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
