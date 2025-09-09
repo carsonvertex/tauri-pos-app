@@ -26,13 +26,7 @@ public class LocalOrderItemServiceImpl implements LocalOrderItemService {
 
     @Override
     public List<LocalOrderItem> getAllLocalOrderItem() {
-        System.out.println("DEBUG: Getting all local order items...");
-        List<LocalOrderItemEntity> entities = localOrderItemDao.findAll();
-        System.out.println("DEBUG: Found " + entities.size() + " entities");
-        for (LocalOrderItemEntity entity : entities) {
-            System.out.println("DEBUG: Entity ID: " + entity.getId() + ", Order ID: " + entity.getOrderId() + ", Product ID: " + entity.getProductId());
-        }
-        return entities.stream()
+        return localOrderItemDao.findAll().stream()
                 .map(LocalOrderItemMapper.INSTANCE::localOrderItemEntityToLocalOrderItem)
                 .toList();
     }
