@@ -8,7 +8,6 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public class AdjustmentDetail {
     private Long adjustmentDetailId;
     private Long adjustmentId;
