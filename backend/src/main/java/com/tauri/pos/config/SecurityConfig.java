@@ -21,15 +21,13 @@ public class SecurityConfig {
             .cors().and()
             .csrf().disable()
             .authorizeHttpRequests(authz -> authz
-                .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers("/pos/**").permitAll()
                 .requestMatchers("/api/pos/**").permitAll()
                 .requestMatchers("/offline/**").permitAll()
                 .requestMatchers("/api/offline/**").permitAll()
                 .requestMatchers("/api/local-orderItem/**").permitAll()
                 .anyRequest().authenticated()
-            )
-            .headers().frameOptions().disable(); // For H2 console
+            );
         
         return http.build();
     }
