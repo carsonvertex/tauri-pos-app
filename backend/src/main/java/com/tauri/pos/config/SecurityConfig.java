@@ -26,6 +26,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/pos/**").permitAll()
                 .requestMatchers("/offline/**").permitAll()
                 .requestMatchers("/api/offline/**").permitAll()
+                .requestMatchers("/api/local-orderItem/**").permitAll()
                 .anyRequest().authenticated()
             )
             .headers().frameOptions().disable(); // For H2 console
