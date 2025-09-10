@@ -6,49 +6,63 @@ import {
   Receipt, 
   Assessment 
 } from "@mui/icons-material";
+import { useAuth } from "../contexts/AuthContext";
+import { PERMISSIONS, hasPermission } from "../types/permissions";
 
 export const Navigation = () => {
   const location = useLocation();
-  const token = localStorage.getItem("authToken");
-  console.log('token', token);
-  const tabs = [
+  const { user } = useAuth();
+  
+  const allTabs = [
     { 
       id: "dashboard", 
       label: "Dashboard", 
       icon: Dashboard, 
-      url: "/dashboard" 
+      url: "/dashboard",
+      permission: PERMISSIONS.USER // Available to all users
     },
     { 
       id: "pos", 
       label: "POS", 
       icon: PointOfSale, 
-      url: "/pos" 
+      url: "/pos",
+      permission: PERMISSIONS.USER // Available to all users
     },
     { 
       id: "products", 
       label: "Products", 
       icon: Inventory, 
-      url: "/products" 
+      url: "/products",
+      permission: PERMISSIONS.USER // Available to all users
     },
     { 
       id: "orders", 
       label: "Orders", 
       icon: Receipt, 
-      url: "/orders" 
+      url: "/orders",
+      permission: PERMISSIONS.USER // Available to all users
     },
     { 
       id: "reports", 
       label: "Reports", 
       icon: Assessment, 
-      url: "/reports" 
+      url: "/reports",
+      permission: PERMISSIONS.USER // Available to all users
     },
     { 
       id: "accounts", 
       label: "Accounts", 
       icon: Assessment, 
-      url: "/accounts" 
+      url: "/accounts",
+      permission: PERMISSIONS.ADMIN // Admin only
     },
   ];
+
+  // Filter tabs based on user permission
+  const tabs = allTabs.filter(tab => {
+    if (!user) return false;
+    return hasPermission(user.permission, tab.permission);
+  });
 
   return (
     <nav className="bg-gray-50 border-b border-gray-200 px-4 py-2">

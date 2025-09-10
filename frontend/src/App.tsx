@@ -1,6 +1,6 @@
 import React from "react";
 import { useTauri } from "./hooks/useTauri";
-import { Header } from "./components";
+import { Header, PermissionRoute } from "./components";
 import { Dashboard, POS, Products, Orders, Reports } from "./pages";
 import "./App.css";
 import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
@@ -8,7 +8,8 @@ import { LoginPage } from "./pages/Login";
 import ProtectedRoutes from "./utils/ProtectedRoutes";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import ProtectedLayout from "./components/ProtectedLayout";
-import { Accounts } from "./pages/Accounts";
+import { PERMISSIONS } from "./types/permissions";
+import Accounts from "./pages/Accounts";
 
 // Component to conditionally render Header
 const ConditionalHeader: React.FC<{
@@ -65,7 +66,14 @@ function App() {
               <Route element={<ProtectedRoutes />}>
                 <Route element={<ProtectedLayout />}>
                   <Route path="/" element={<Dashboard />} />
-                  <Route path="/accounts" element={<Accounts />} />
+                  <Route 
+                    path="/accounts" 
+                    element={
+                      <PermissionRoute requiredPermission={PERMISSIONS.ADMIN}>
+                        <Accounts />
+                      </PermissionRoute>
+                    } 
+                  />
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/pos" element={<POS />} />
                   <Route path="/products" element={<Products />} />
