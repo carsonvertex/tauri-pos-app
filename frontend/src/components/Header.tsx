@@ -23,9 +23,14 @@ export const Header: React.FC<HeaderProps> = ({
   onManualSync,
   onManualReconnect,
 }) => {
+
+
   return (
     <header className="app-header">
-      <h1>🛒 Tauri POS</h1>
+      <div className="header-left">
+        <h1>🛒 Tauri POS</h1>
+       
+      </div>
       <div className="backend-status">
         <span
           className={`status-indicator ${
@@ -42,7 +47,10 @@ export const Header: React.FC<HeaderProps> = ({
           // Always show restart button when Tauri is available
           <button
             className="reconnect-btn"
-            onClick={onManualReconnect}
+            onClick={() => {
+              console.log('Restart button clicked!');
+              onManualReconnect();
+            }}
             disabled={isRestarting}
             title="Restart backend server"
           >
@@ -53,7 +61,10 @@ export const Header: React.FC<HeaderProps> = ({
           !backendStatus.running && (
             <button
               className="reconnect-btn"
-              onClick={onManualReconnect}
+              onClick={() => {
+                console.log('Reconnect button clicked!');
+                onManualReconnect();
+              }}
               title="Check backend connection"
             >
               🔄 Reconnect

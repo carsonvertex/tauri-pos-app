@@ -27,6 +27,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/offline/**").permitAll()
                 .requestMatchers("/api/local-orderItem/**").permitAll()
                 .requestMatchers("/api/adjustment-detail/**").permitAll()
+                .requestMatchers("/api/users/**").permitAll()
                 .requestMatchers("/api/test/**").permitAll()
                 .requestMatchers("/error").permitAll()
                 .anyRequest().authenticated()

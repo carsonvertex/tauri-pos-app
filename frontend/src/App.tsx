@@ -47,7 +47,6 @@ function App() {
               <Route
                 path="/reports"
                 element={<Reports /> }
-               
               />
             </Route>
           </Routes>

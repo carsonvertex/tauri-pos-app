@@ -39,6 +39,7 @@ export const useTauri = () => {
 
   const checkBackendStatus = async () => {
     try {
+      console.log('Checking backend status...');
       // Check backend status by making HTTP request to Spring Boot
       const response = await fetch('http://localhost:8080/api/pos/health', {
         method: 'GET',
@@ -47,14 +48,32 @@ export const useTauri = () => {
         },
       });
       
+      console.log('Backend health check response:', response.status, response.statusText);
+      
       if (response.ok) {
         const newStatus = { running: true, port: 8080 };
         setBackendStatus(newStatus);
         backendStatusRef.current = newStatus;
+        console.log('Backend is running on port 8080');
       } else {
-        const newStatus = { running: false, port: undefined };
-        setBackendStatus(newStatus);
-        backendStatusRef.current = newStatus;
+        // Try alternative endpoints if health endpoint doesn't exist
+        console.log('Health endpoint failed, trying root endpoint...');
+        const rootResponse = await fetch('http://localhost:8080/', {
+          method: 'GET',
+        });
+        
+        if (rootResponse.ok || rootResponse.status === 404 || rootResponse.status === 403) {
+          // Server is running but endpoint doesn't exist or is protected
+          const newStatus = { running: true, port: 8080 };
+          setBackendStatus(newStatus);
+          backendStatusRef.current = newStatus;
+          console.log('Backend is running on port 8080 (detected via root endpoint)');
+        } else {
+          const newStatus = { running: false, port: undefined };
+          setBackendStatus(newStatus);
+          backendStatusRef.current = newStatus;
+          console.log('Backend is not responding');
+        }
       }
     } catch (error) {
       console.error('Failed to get backend status:', error);
@@ -67,6 +86,7 @@ export const useTauri = () => {
 
   const checkSyncStatus = async () => {
     try {
+      console.log('Checking sync status...');
       const response = await fetch('http://localhost:8080/api/offline/sync/status', {
         method: 'GET',
         headers: {
@@ -74,11 +94,15 @@ export const useTauri = () => {
         },
       });
       
+      console.log('Sync status response:', response.status, response.statusText);
+      
       if (response.ok) {
         const status = await response.json();
         setSyncStatus(status);
+        console.log('Sync status updated:', status);
       } else {
         // If sync endpoint fails, create a default status
+        console.log('Sync endpoint not available, using default status');
         setSyncStatus({
           pendingProducts: 0,
           pendingOrders: 0,
@@ -165,16 +189,21 @@ export const useTauri = () => {
       return false;
     }
 
+    console.log('Starting backend restart process...');
     setIsRestarting(true);
     try {
+      console.log('Stopping backend...');
       // First stop the backend if it's running
       await invoke('stop_backend');
       
       // Wait a moment for the process to fully stop
+      console.log('Waiting for backend to stop...');
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Then start it again
+      console.log('Starting backend...');
       const result = await invoke('start_backend') as BackendStatus;
+      console.log('Backend start result:', result);
       
       // Update the status
       setBackendStatus(result);
@@ -182,6 +211,7 @@ export const useTauri = () => {
       
       // Wait a bit for the backend to fully start, then check sync status
       if (result.running) {
+        console.log('Backend started successfully, will check sync status in 2 seconds...');
         setTimeout(async () => {
           await checkSyncStatus();
         }, 2000);
@@ -197,7 +227,10 @@ export const useTauri = () => {
   };
 
   const manualReconnect = async () => {
+    console.log('Manual reconnect clicked!', { tauriAvailable, backendStatus: backendStatusRef.current });
+    
     if (tauriAvailable) {
+      console.log('Tauri available, attempting to restart backend...');
       // If Tauri is available, restart the backend
       const success = await restartBackend();
       if (success) {
@@ -207,12 +240,20 @@ export const useTauri = () => {
         await checkBackendStatus();
       }
     } else {
+      console.log('Tauri not available, checking backend status...');
       // Fallback to just checking status if Tauri is not available
       await checkBackendStatus();
     }
     
+    // Always check sync status after reconnect attempt
+    console.log('Checking sync status after reconnect...');
+    await checkSyncStatus();
+    
+    // Provide user feedback
     if (backendStatusRef.current.running) {
-      await checkSyncStatus();
+      console.log('✅ Backend connection successful!');
+    } else {
+      console.log('❌ Backend connection failed. Please check if the server is running.');
     }
   };
 

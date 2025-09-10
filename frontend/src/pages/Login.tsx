@@ -11,7 +11,8 @@ import {
   Alert,
 } from "@mui/material";
 import { Login as LoginIcon, ShoppingCart } from "@mui/icons-material";
-import { comparePassword, hashPassword } from "../utils/bcrypt-hash";
+// Removed bcrypt imports since we now send plain password to backend
+import { loginRequest } from "../api/login-api";
 
 export const LoginPage = () => {
   const [username, setUsername] = useState("");
@@ -23,12 +24,9 @@ export const LoginPage = () => {
     setError("");
 
     try {
-      // Handle login logic here
-      console.log("Login attempt:", {
-        username,
-        password: await hashPassword(password),
-      });
-       
+      // Send plain password to backend for proper bcrypt comparison
+      const result = await loginRequest(username, password);
+      console.log("Login result:", result);
       // Authenticate user
     } catch (error) {
       console.error("Login error:", error);
