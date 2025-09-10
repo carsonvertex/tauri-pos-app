@@ -24,12 +24,12 @@ const ConditionalHeader: React.FC<{
 }> = (props) => {
   const location = useLocation();
   const { isAuthenticated } = useAuth();
-  
+
   // Show header only on protected routes (not on login page)
-  if (location.pathname === '/login' || !isAuthenticated) {
+  if (location.pathname === "/login" || !isAuthenticated) {
     return null;
   }
-  
+
   return <Header {...props} />;
 };
 
@@ -66,13 +66,13 @@ function App() {
               <Route element={<ProtectedRoutes />}>
                 <Route element={<ProtectedLayout />}>
                   <Route path="/" element={<Dashboard />} />
-                  <Route 
-                    path="/accounts" 
+                  <Route
+                    path="/accounts"
                     element={
                       <PermissionRoute requiredPermission={PERMISSIONS.ADMIN}>
                         <Accounts />
                       </PermissionRoute>
-                    } 
+                    }
                   />
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/pos" element={<POS />} />

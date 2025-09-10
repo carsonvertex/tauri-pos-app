@@ -5,7 +5,6 @@ import { Navigation } from './Navigation';
 const ProtectedLayout: React.FC = () => {
   return (
     <>
-      <Navigation />
       <Outlet />
     </>
   );
