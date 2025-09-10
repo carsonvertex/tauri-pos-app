@@ -1,5 +1,6 @@
 import React from 'react';
 import { SyncStatusSummary } from '../types';
+import { CloudOff, CloudSync, CheckCircle, Error, Warning } from '@mui/icons-material';
 
 interface OfflineStatusProps {
   isOnline: boolean;
@@ -23,48 +24,66 @@ export const OfflineStatus: React.FC<OfflineStatusProps> = ({
     }
   };
 
-  const getStatusColor = () => {
-    if (!isOnline) return 'bg-gray-500';
-    if (!syncStatus) return 'bg-yellow-500';
-    if (syncStatus.totalPending > 0) return 'bg-orange-500';
-    if (syncStatus.totalFailed > 0) return 'bg-red-500';
-    return 'bg-green-500';
+  const getStatusInfo = () => {
+    if (!isOnline) {
+      return {
+        color: 'bg-gray-100 text-gray-800',
+        icon: CloudOff,
+        text: 'Offline'
+      };
+    }
+    if (!syncStatus) {
+      return {
+        color: 'bg-yellow-100 text-yellow-800',
+        icon: Warning,
+        text: 'Checking...'
+      };
+    }
+    if (syncStatus.totalPending > 0) {
+      return {
+        color: 'bg-orange-100 text-orange-800',
+        icon: CloudSync,
+        text: `${syncStatus.totalPending} Pending`
+      };
+    }
+    if (syncStatus.totalFailed > 0) {
+      return {
+        color: 'bg-red-100 text-red-800',
+        icon: Error,
+        text: `${syncStatus.totalFailed} Failed`
+      };
+    }
+    return {
+      color: 'bg-green-100 text-green-800',
+      icon: CheckCircle,
+      text: 'Synced'
+    };
   };
 
-  const getStatusText = () => {
-    if (!isOnline) return 'Offline';
-    if (!syncStatus) return 'Checking...';
-    if (syncStatus.totalPending > 0) return `${syncStatus.totalPending} Pending`;
-    if (syncStatus.totalFailed > 0) return `${syncStatus.totalFailed} Failed`;
-    return 'Synced';
-  };
+  const statusInfo = getStatusInfo();
+  const StatusIcon = statusInfo.icon;
 
   return (
-    <div className="flex items-center space-x-2 p-2 bg-gray-100 rounded-lg">
-      {/* Status Indicator */}
-      <div className={`w-3 h-3 rounded-full ${getStatusColor()}`}></div>
+    <div className={`flex items-center space-x-1 px-3 py-1 rounded-lg text-sm font-medium ${statusInfo.color}`}>
+      <StatusIcon className="w-4 h-4" />
+      <span>{statusInfo.text}</span>
       
-      {/* Status Text */}
-      <span className="text-sm font-medium text-gray-700">
-        {getStatusText()}
-      </span>
+      {/* Detailed Status */}
+      {syncStatus && (
+        <span className="text-xs opacity-75 ml-1">
+          ({syncStatus.totalSynced} synced)
+        </span>
+      )}
       
       {/* Sync Button */}
       {isOnline && syncStatus && (syncStatus.totalPending > 0 || syncStatus.totalFailed > 0) && (
         <button
           onClick={handleForceSync}
           disabled={isSyncing}
-          className="px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+          className="ml-2 px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 transition-colors"
         >
           {isSyncing ? 'Syncing...' : 'Sync Now'}
         </button>
-      )}
-      
-      {/* Detailed Status */}
-      {syncStatus && (
-        <div className="text-xs text-gray-500">
-          {syncStatus.totalSynced} synced
-        </div>
       )}
     </div>
   );

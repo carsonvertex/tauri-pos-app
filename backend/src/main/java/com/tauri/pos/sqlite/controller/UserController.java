@@ -1,5 +1,7 @@
 package com.tauri.pos.sqlite.controller;
 
+import com.tauri.pos.shared.dto.AuthResponse;
+import com.tauri.pos.shared.service.JwtService;
 import com.tauri.pos.sqlite.model.User;
 import com.tauri.pos.sqlite.service.UserService;
 import org.springframework.http.HttpStatus;
@@ -13,9 +15,11 @@ import java.util.List;
 @CrossOrigin(origins = "*")
 public class UserController {
     private final UserService userService;
+    private final JwtService jwtService;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, JwtService jwtService) {
         this.userService = userService;
+        this.jwtService = jwtService;
     }
 
     /**
@@ -62,18 +66,35 @@ public class UserController {
     }
 
     @GetMapping("/authenticate")
-    public ResponseEntity<User> authenticateUser(
+    public ResponseEntity<AuthResponse> authenticateUser(
             @RequestParam String username,
             @RequestParam String password) {
         try {
             User user = userService.authenticateUser(username, password);
             if (user != null) {
-                return ResponseEntity.ok(user);
+                // Generate JWT token
+                String token = jwtService.generateToken(user.getUsername(), user.getUserid(), user.getPermission());
+                
+                AuthResponse authResponse = AuthResponse.builder()
+                        .token(token)
+                        .username(user.getUsername())
+                        .permission(user.getPermission())
+                        .userId(user.getUserid())
+                        .message("Authentication successful")
+                        .build();
+                
+                return ResponseEntity.ok(authResponse);
             } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+                AuthResponse authResponse = AuthResponse.builder()
+                        .message("Invalid username or password")
+                        .build();
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(authResponse);
             }
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            AuthResponse authResponse = AuthResponse.builder()
+                    .message("Internal server error")
+                    .build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(authResponse);
         }
     }
 

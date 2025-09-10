@@ -11,13 +11,16 @@ import {
   Alert,
 } from "@mui/material";
 import { Login as LoginIcon, ShoppingCart } from "@mui/icons-material";
-// Removed bcrypt imports since we now send plain password to backend
 import { loginRequest } from "../api/login-api";
+import { useAuth } from "../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 export const LoginPage = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,10 +30,19 @@ export const LoginPage = () => {
       // Send plain password to backend for proper bcrypt comparison
       const result = await loginRequest(username, password);
       console.log("Login result:", result);
-      // Authenticate user
-    } catch (error) {
+      
+      // Store JWT token and user data
+      login(result.token, {
+        userId: result.userId,
+        username: result.username,
+        permission: result.permission,
+      });
+      
+      // Redirect to dashboard or main app
+      navigate('/dashboard');
+    } catch (error: any) {
       console.error("Login error:", error);
-      setError("An error occurred during login");
+      setError(error.message || "An error occurred during login");
     }
   };
 
