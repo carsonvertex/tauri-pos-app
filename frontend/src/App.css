@@ -1,7 +1,6 @@
 /* Reset and base styles */
 * {
   margin: 0;
-  padding: 0;
   box-sizing: border-box;
 }
 
@@ -343,80 +342,18 @@ body {
   font-size: 2rem;
   font-weight: 700;
 }
+ 
 
-/* POS Layout */
-.pos h2 {
-  margin-bottom: 2rem;
-  color: #1f2937;
-  font-size: 1.8rem;
-}
+ 
 
-.pos-layout {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 2rem;
-  height: 70vh;
-}
+ 
 
-.product-grid {
-  background: white;
-  padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
+ 
+ 
 
-.product-grid h3 {
-  margin-bottom: 1rem;
-  color: #374151;
-}
-
-.product-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 1rem;
-}
-
-.product-item {
-  background: #f8fafc;
-  padding: 1rem;
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-align: center;
-}
-
-.product-item:hover {
-  background: #e2e8f0;
-  border-color: #cbd5e1;
-}
-
-.cart {
-  background: white;
-  padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  display: flex;
-  flex-direction: column;
-}
-
-.cart h3 {
-  margin-bottom: 1rem;
-  color: #374151;
-}
-
-.cart-items {
-  flex: 1;
-  margin-bottom: 1rem;
-  color: #6b7280;
-}
-
-.cart-total {
-  padding: 1rem 0;
-  border-top: 1px solid #e5e7eb;
-  margin-bottom: 1rem;
-  font-size: 1.2rem;
-}
+ 
+ 
+ 
 
 /* Tables */
 .products h2, .orders h2, .reports h2 {
@@ -545,10 +482,7 @@ td {
     gap: 0.5rem;
   }
   
-  .pos-layout {
-    grid-template-columns: 1fr;
-    height: auto;
-  }
+ 
   
   .stats-grid {
     grid-template-columns: 1fr;

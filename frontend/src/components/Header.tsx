@@ -42,7 +42,7 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="bg-white shadow-lg border-b border-gray-200 px-4 py-12">
+    <header className="bg-white shadow-lg border-b border-gray-200  ">
       <div className="grid grid-cols-12 px-12 bg-amber-500 h-24 flex items-center">
         {/* Left Section - App Title */}
         <div className="col-span-4 mx-4 gap-2 flex items-center space-x-2">
