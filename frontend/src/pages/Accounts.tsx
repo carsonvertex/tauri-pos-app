@@ -21,7 +21,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import AddIcon from "@mui/icons-material/Add";
 import { visuallyHidden } from "@mui/utils";
-import { getAllUsers } from "../api/users-api";
+import { getAllUsers } from "../api/sqlite-api/users-api";
 
 // User interface matching API response
 interface User {

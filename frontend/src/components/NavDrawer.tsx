@@ -9,7 +9,7 @@ import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import { hasPermission, PERMISSIONS } from "../types/permissions";
 import { useAuth } from "../contexts/AuthContext";
-import { Assessment, Receipt, Dashboard } from "@mui/icons-material";
+import { Assessment, Receipt, Dashboard, Sync } from "@mui/icons-material";
 import { Inventory } from "@mui/icons-material";
 import { PointOfSale } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
@@ -26,6 +26,13 @@ export default function NavDrawer() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const allTabs = [
+    {
+      id: "sync",
+      label: "Sync",
+      icon: Sync,
+      url: "/sync",
+      permission: PERMISSIONS.ADMIN, // Admin only
+    },
     {
       id: "accounts",
       label: "Accounts",

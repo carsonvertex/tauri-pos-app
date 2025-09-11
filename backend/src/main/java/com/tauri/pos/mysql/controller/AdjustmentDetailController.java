@@ -12,7 +12,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/adjustment-detail")
 @CrossOrigin(origins = "*")
-@ConditionalOnProperty(name = "spring.datasource.mysql.jdbc-url")
+@ConditionalOnProperty(name = "spring.datasource.mysql.enabled", havingValue = "true", matchIfMissing = false)
 public class AdjustmentDetailController {
     private final AdjustmentDetailService adjustmentDetailService;
 

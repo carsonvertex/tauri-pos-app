@@ -12,7 +12,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/product-descriptions")
 @CrossOrigin(origins = "*")
-@ConditionalOnProperty(name = "spring.datasource.mysql.jdbc-url")
+@ConditionalOnProperty(name = "spring.datasource.mysql.enabled", havingValue = "true", matchIfMissing = false)
 public class ProductDescriptionController {
     private final ProductDescriptionService productDescriptionService;
 

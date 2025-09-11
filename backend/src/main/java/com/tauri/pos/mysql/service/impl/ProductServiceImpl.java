@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-@ConditionalOnProperty(name = "spring.datasource.mysql.jdbc-url")
+@ConditionalOnProperty(name = "spring.datasource.mysql.enabled", havingValue = "true", matchIfMissing = false)
 public class ProductServiceImpl implements ProductService {
     private final ProductDao productDao;
 

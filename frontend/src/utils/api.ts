@@ -1,4 +1,4 @@
-import { API_BASE_URL } from '../api/pos-api';
+import { API_BASE_URL } from '../api/sqlite-api/pos-api';
 
 export const createAuthenticatedRequest = async (
   endpoint: string,
