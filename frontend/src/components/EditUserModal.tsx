@@ -16,16 +16,7 @@ import {
   Checkbox,
   FormControlLabel,
 } from '@mui/material';
-import { updateUser, UpdateUserRequest, getAdminCount } from '../api/sqlite-api/users-api';
-
-interface User {
-  userid: number;
-  username: string;
-  hashedPassword: string;
-  permission: string;
-  createdAt: string | null;
-  updatedAt: string | null;
-}
+import { UpdateUserRequest, useUpdateUser, useAdminCount, User } from '../hooks/useUsers';
 
 interface EditUserModalProps {
   open: boolean;
@@ -40,12 +31,14 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ open, onClose, onUserUpda
     hashedPassword: '',
     permission: 'user',
   });
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [changePassword, setChangePassword] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [adminCount, setAdminCount] = useState<number>(0);
+
+  // Use TanStack Query mutations and queries
+  const updateUserMutation = useUpdateUser();
+  const { data: adminCount = 0 } = useAdminCount();
 
   // Update form data when user changes
   useEffect(() => {
@@ -59,24 +52,13 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ open, onClose, onUserUpda
       setShowCurrentPassword(false);
       setError(null);
       setSuccess(false);
-      
-      // Fetch admin count
-      const fetchAdminCount = async () => {
-        try {
-          const count = await getAdminCount();
-          setAdminCount(count);
-        } catch (error) {
-          console.error('Failed to fetch admin count:', error);
-        }
-      };
-      fetchAdminCount();
     }
   }, [user]);
 
   const handleInputChange = (field: keyof UpdateUserRequest) => (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | any
   ) => {
-    setFormData(prev => ({
+    setFormData((prev: UpdateUserRequest) => ({
       ...prev,
       [field]: event.target.value,
     }));
@@ -94,47 +76,48 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ open, onClose, onUserUpda
       setError('Username must be at least 3 characters long');
       return;
     }
-    if (changePassword && formData.hashedPassword.length < 6) {
+    if (changePassword && formData.hashedPassword && formData.hashedPassword.length < 6) {
       setError('Password must be at least 6 characters long');
       return;
     }
 
-    setLoading(true);
     setError(null);
 
-    try {
-      // Prepare update data
-      const updateData: UpdateUserRequest = {
-        username: formData.username,
-        permission: formData.permission,
-      };
+    // Prepare update data
+    const updateData: UpdateUserRequest = {
+      username: formData.username,
+      permission: formData.permission,
+    };
 
-      // Only include password if user wants to change it
-      if (changePassword && formData.hashedPassword) {
-        updateData.hashedPassword = formData.hashedPassword;
-      }
-
-      const response = await updateUser(user!.userid, updateData);
-      
-      if (response.success) {
-        setSuccess(true);
-        setTimeout(() => {
-          setSuccess(false);
-          handleClose();
-          onUserUpdated();
-        }, 1500);
-      } else {
-        setError(response.message);
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update user');
-    } finally {
-      setLoading(false);
+    // Only include password if user wants to change it
+    if (changePassword && formData.hashedPassword) {
+      updateData.hashedPassword = formData.hashedPassword;
     }
+
+    updateUserMutation.mutate(
+      { userId: user!.userid, userData: updateData },
+      {
+        onSuccess: (response) => {
+          if (response.success) {
+            setSuccess(true);
+            setTimeout(() => {
+              setSuccess(false);
+              handleClose();
+              onUserUpdated();
+            }, 1500);
+          } else {
+            setError(response.message);
+          }
+        },
+        onError: (err) => {
+          setError(err instanceof Error ? err.message : 'Failed to update user');
+        },
+      }
+    );
   };
 
   const handleClose = () => {
-    if (!loading) {
+    if (!updateUserMutation.isPending) {
       setFormData({
         username: '',
         hashedPassword: '',
@@ -180,7 +163,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ open, onClose, onUserUpda
             variant="outlined"
             value={formData.username}
             onChange={handleInputChange('username')}
-            disabled={loading}
+            disabled={updateUserMutation.isPending}
             helperText="Username must be unique and at least 3 characters long"
             sx={{ mb: 2 }}
           />
@@ -190,7 +173,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ open, onClose, onUserUpda
               <Checkbox
                 checked={showCurrentPassword}
                 onChange={(e) => setShowCurrentPassword(e.target.checked)}
-                disabled={loading}
+                disabled={updateUserMutation.isPending}
               />
             }
             label="Show Current Password Hash"
@@ -218,7 +201,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ open, onClose, onUserUpda
               <Checkbox
                 checked={changePassword}
                 onChange={(e) => setChangePassword(e.target.checked)}
-                disabled={loading}
+                disabled={updateUserMutation.isPending}
               />
             }
             label="Change Password"
@@ -234,7 +217,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ open, onClose, onUserUpda
               variant="outlined"
               value={formData.hashedPassword}
               onChange={handleInputChange('hashedPassword')}
-              disabled={loading}
+              disabled={updateUserMutation.isPending}
               helperText="Password must be at least 6 characters long"
               sx={{ mb: 2 }}
             />
@@ -245,7 +228,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ open, onClose, onUserUpda
             <Select
               value={formData.permission}
               onChange={handleInputChange('permission')}
-              disabled={loading || (user?.permission === 'admin' && adminCount <= 1)}
+              disabled={updateUserMutation.isPending || (user?.permission === 'admin' && adminCount <= 1)}
               label="Permission Level"
             >
               <MenuItem value="user">User</MenuItem>
@@ -263,7 +246,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ open, onClose, onUserUpda
       <DialogActions sx={{ p: 3 }}>
         <Button 
           onClick={handleClose} 
-          disabled={loading}
+          disabled={updateUserMutation.isPending}
           color="inherit"
         >
           Cancel
@@ -271,10 +254,10 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ open, onClose, onUserUpda
         <Button 
           onClick={handleSubmit} 
           variant="contained"
-          disabled={loading}
+          disabled={updateUserMutation.isPending}
           color="primary"
         >
-          {loading ? 'Updating...' : 'Update User'}
+          {updateUserMutation.isPending ? 'Updating...' : 'Update User'}
         </Button>
       </DialogActions>
     </Dialog>

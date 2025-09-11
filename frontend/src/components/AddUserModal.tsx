@@ -14,7 +14,7 @@ import {
   Box,
   Typography,
 } from '@mui/material';
-import { createUser, CreateUserRequest } from '../api/sqlite-api/users-api';
+import { CreateUserRequest, useCreateUser } from '../hooks/useUsers';
 
 interface AddUserModalProps {
   open: boolean;
@@ -28,9 +28,11 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ open, onClose, onUserCreate
     hashedPassword: '',
     permission: 'user',
   });
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+
+  // Use TanStack Query mutation
+  const createUserMutation = useCreateUser();
 
   const handleInputChange = (field: keyof CreateUserRequest) => (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | any
@@ -62,31 +64,29 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ open, onClose, onUserCreate
       return;
     }
 
-    setLoading(true);
     setError(null);
 
-    try {
-      const response = await createUser(formData);
-      
-      if (response.success) {
-        setSuccess(true);
-        setTimeout(() => {
-          setSuccess(false);
-          handleClose();
-          onUserCreated();
-        }, 1500);
-      } else {
-        setError(response.message);
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create user');
-    } finally {
-      setLoading(false);
-    }
+    createUserMutation.mutate(formData, {
+      onSuccess: (response) => {
+        if (response.success) {
+          setSuccess(true);
+          setTimeout(() => {
+            setSuccess(false);
+            handleClose();
+            onUserCreated();
+          }, 1500);
+        } else {
+          setError(response.message);
+        }
+      },
+      onError: (err) => {
+        setError(err instanceof Error ? err.message : 'Failed to create user');
+      },
+    });
   };
 
   const handleClose = () => {
-    if (!loading) {
+    if (!createUserMutation.isPending) {
       setFormData({
         username: '',
         hashedPassword: '',
@@ -128,7 +128,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ open, onClose, onUserCreate
             variant="outlined"
             value={formData.username}
             onChange={handleInputChange('username')}
-            disabled={loading}
+            disabled={createUserMutation.isPending}
             helperText="Username must be unique and at least 3 characters long"
             sx={{ mb: 2 }}
           />
@@ -141,7 +141,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ open, onClose, onUserCreate
             variant="outlined"
             value={formData.hashedPassword}
             onChange={handleInputChange('hashedPassword')}
-            disabled={loading}
+            disabled={createUserMutation.isPending}
             helperText="Password must be at least 6 characters long"
             sx={{ mb: 2 }}
           />
@@ -151,7 +151,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ open, onClose, onUserCreate
             <Select
               value={formData.permission}
               onChange={handleInputChange('permission')}
-              disabled={loading}
+              disabled={createUserMutation.isPending}
               label="Permission Level"
             >
               <MenuItem value="user">User</MenuItem>
@@ -164,7 +164,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ open, onClose, onUserCreate
       <DialogActions sx={{ p: 3 }}>
         <Button 
           onClick={handleClose} 
-          disabled={loading}
+          disabled={createUserMutation.isPending}
           color="inherit"
         >
           Cancel
@@ -172,10 +172,10 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ open, onClose, onUserCreate
         <Button 
           onClick={handleSubmit} 
           variant="contained"
-          disabled={loading}
+          disabled={createUserMutation.isPending}
           color="primary"
         >
-          {loading ? 'Creating...' : 'Create User'}
+          {createUserMutation.isPending ? 'Creating...' : 'Create User'}
         </Button>
       </DialogActions>
     </Dialog>

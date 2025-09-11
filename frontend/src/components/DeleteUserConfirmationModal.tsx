@@ -11,16 +11,7 @@ import {
   Chip,
 } from '@mui/material';
 import { Delete as DeleteIcon } from '@mui/icons-material';
-import { deleteUser, DeleteUserResponse } from '../api/sqlite-api/users-api';
-
-interface User {
-  userid: number;
-  username: string;
-  hashedPassword: string;
-  permission: string;
-  createdAt: string | null;
-  updatedAt: string | null;
-}
+import { useDeleteUser, User } from '../hooks/useUsers';
 
 interface DeleteUserConfirmationModalProps {
   open: boolean;
@@ -35,33 +26,33 @@ const DeleteUserConfirmationModal: React.FC<DeleteUserConfirmationModalProps> = 
   onUserDeleted, 
   user 
 }) => {
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Use TanStack Query mutation
+  const deleteUserMutation = useDeleteUser();
 
   const handleDelete = async () => {
     if (!user) return;
 
-    setLoading(true);
     setError(null);
 
-    try {
-      const response = await deleteUser(user.userid);
-      
-      if (response.success) {
-        onClose();
-        onUserDeleted();
-      } else {
-        setError(response.message);
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete user');
-    } finally {
-      setLoading(false);
-    }
+    deleteUserMutation.mutate(user.userid, {
+      onSuccess: (response) => {
+        if (response.success) {
+          onClose();
+          onUserDeleted();
+        } else {
+          setError(response.message);
+        }
+      },
+      onError: (err) => {
+        setError(err instanceof Error ? err.message : 'Failed to delete user');
+      },
+    });
   };
 
   const handleClose = () => {
-    if (!loading) {
+    if (!deleteUserMutation.isPending) {
       setError(null);
       onClose();
     }
@@ -144,7 +135,7 @@ const DeleteUserConfirmationModal: React.FC<DeleteUserConfirmationModalProps> = 
       <DialogActions sx={{ p: 3 }}>
         <Button 
           onClick={handleClose} 
-          disabled={loading}
+          disabled={deleteUserMutation.isPending}
           color="inherit"
         >
           Cancel
@@ -152,11 +143,11 @@ const DeleteUserConfirmationModal: React.FC<DeleteUserConfirmationModalProps> = 
         <Button 
           onClick={handleDelete} 
           variant="contained"
-          disabled={loading}
+          disabled={deleteUserMutation.isPending}
           color="error"
           startIcon={<DeleteIcon />}
         >
-          {loading ? 'Deleting...' : 'Delete User'}
+          {deleteUserMutation.isPending ? 'Deleting...' : 'Delete User'}
         </Button>
       </DialogActions>
     </Dialog>

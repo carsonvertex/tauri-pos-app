@@ -21,20 +21,11 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import AddIcon from "@mui/icons-material/Add";
 import { visuallyHidden } from "@mui/utils";
-import { getAllUsers } from "../api/sqlite-api/users-api";
 import AddUserModal from "../components/AddUserModal";
 import EditUserModal from "../components/EditUserModal";
 import DeleteUserConfirmationModal from "../components/DeleteUserConfirmationModal";
+import { useUsers, User } from "../hooks/useUsers";
 
-// User interface matching API response
-interface User {
-  userid: number;
-  username: string;
-  hashedPassword: string;
-  permission: string;
-  createdAt: string | null;
-  updatedAt: string | null;
-}
 
 type Order = "asc" | "desc";
 
@@ -247,29 +238,13 @@ const Accounts: React.FC = () => {
   const [selected, setSelected] = React.useState<number | null>(null);
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
-  const [users, setUsers] = React.useState<User[]>([]);
-  const [loading, setLoading] = React.useState(true);
+  // Use TanStack Query for data fetching
+  const { data: users = [], isLoading: loading, error } = useUsers();
   const [addUserModalOpen, setAddUserModalOpen] = React.useState(false);
   const [editUserModalOpen, setEditUserModalOpen] = React.useState(false);
   const [deleteUserModalOpen, setDeleteUserModalOpen] = React.useState(false);
   const [selectedUser, setSelectedUser] = React.useState<User | null>(null);
 
-  // Fetch users from API
-  React.useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        setLoading(true);
-        const usersData = await getAllUsers();
-        setUsers(usersData);
-      } catch (error) {
-        console.error("Failed to fetch users:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUsers();
-  }, []);
 
   const handleRequestSort = (
     _event: React.MouseEvent<unknown>,
@@ -283,7 +258,7 @@ const Accounts: React.FC = () => {
 
   const handleClick = (_event: React.MouseEvent<unknown>, id: number) => {
     // Find the user to check if they're an admin
-    const user = users.find(u => u.userid === id);
+    const user = users.find((u: User) => u.userid === id);
     if (user && user.permission === 'admin') {
       // Don't allow selection of admin users
       return;
@@ -313,25 +288,14 @@ const Accounts: React.FC = () => {
   };
 
   const handleUserCreated = () => {
-    // Refresh the users list
-    const fetchUsers = async () => {
-      try {
-        setLoading(true);
-        const usersData = await getAllUsers();
-        setUsers(usersData);
-      } catch (error) {
-        console.error("Failed to fetch users:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchUsers();
+    // TanStack Query will automatically refetch the data
+    setAddUserModalOpen(false);
   };
 
   const handleDeleteSelected = () => {
     // Single user deletion
     if (selected !== null) {
-      const userToDelete = users.find(user => user.userid === selected);
+      const userToDelete = users.find((user: User) => user.userid === selected);
       if (userToDelete) {
         setSelectedUser(userToDelete);
         setDeleteUserModalOpen(true);
@@ -340,20 +304,9 @@ const Accounts: React.FC = () => {
   };
 
   const handleUserDeleted = () => {
-    // Refresh the users list
-    const fetchUsers = async () => {
-      try {
-        setLoading(true);
-        const usersData = await getAllUsers();
-        setUsers(usersData);
-        setSelected(null); // Clear selection
-      } catch (error) {
-        console.error("Failed to fetch users:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchUsers();
+    // TanStack Query will automatically refetch the data
+    setSelected(null); // Clear selection
+    setDeleteUserModalOpen(false);
   };
 
   const handleEditUser = (user: User) => {
@@ -362,19 +315,8 @@ const Accounts: React.FC = () => {
   };
 
   const handleUserUpdated = () => {
-    // Refresh the users list
-    const fetchUsers = async () => {
-      try {
-        setLoading(true);
-        const usersData = await getAllUsers();
-        setUsers(usersData);
-      } catch (error) {
-        console.error("Failed to fetch users:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchUsers();
+    // TanStack Query will automatically refetch the data
+    setEditUserModalOpen(false);
   };
 
   const isSelected = (id: number) => selected === id;
@@ -412,6 +354,16 @@ const Accounts: React.FC = () => {
     return (
       <Box sx={{ width: "100%", p: 3 }}>
         <Typography>Loading users...</Typography>
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ width: "100%", p: 3 }}>
+        <Typography color="error">
+          Error loading users: {error instanceof Error ? error.message : 'Unknown error'}
+        </Typography>
       </Box>
     );
   }
