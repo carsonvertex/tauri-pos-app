@@ -22,6 +22,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import AddIcon from "@mui/icons-material/Add";
 import { visuallyHidden } from "@mui/utils";
 import { getAllUsers } from "../api/sqlite-api/users-api";
+import AddUserModal from "../components/AddUserModal";
 
 // User interface matching API response
 interface User {
@@ -259,6 +260,7 @@ const Accounts: React.FC = () => {
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const [users, setUsers] = React.useState<User[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const [addUserModalOpen, setAddUserModalOpen] = React.useState(false);
 
   // Fetch users from API
   React.useEffect(() => {
@@ -327,8 +329,23 @@ const Accounts: React.FC = () => {
   };
 
   const handleAddUser = () => {
-    // TODO: Implement add user functionality
-    console.log("Add user clicked");
+    setAddUserModalOpen(true);
+  };
+
+  const handleUserCreated = () => {
+    // Refresh the users list
+    const fetchUsers = async () => {
+      try {
+        setLoading(true);
+        const usersData = await getAllUsers();
+        setUsers(usersData);
+      } catch (error) {
+        console.error("Failed to fetch users:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUsers();
   };
 
   const handleDeleteSelected = () => {
@@ -483,6 +500,12 @@ const Accounts: React.FC = () => {
           onRowsPerPageChange={handleChangeRowsPerPage}
         />
       </Paper>
+      
+      <AddUserModal
+        open={addUserModalOpen}
+        onClose={() => setAddUserModalOpen(false)}
+        onUserCreated={handleUserCreated}
+      />
     </Box>
   );
 };

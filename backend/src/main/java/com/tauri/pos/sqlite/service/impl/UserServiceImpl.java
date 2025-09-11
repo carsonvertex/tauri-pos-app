@@ -22,6 +22,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User createUser(User user) {
+        // Check if username already exists
+        UserEntity existingUser = userDao.findByUsername(user.getUsername());
+        if (existingUser != null) {
+            throw new RuntimeException("Username already exists: " + user.getUsername());
+        }
+        
         // Hash the password before saving
         UserEntity userEntity = UserMapper.INSTANCE.userToUserEntity(user);
         userEntity.setHashedPassword(passwordEncoder.encode(user.getHashedPassword()));

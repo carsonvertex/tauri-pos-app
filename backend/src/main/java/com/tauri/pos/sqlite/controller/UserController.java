@@ -26,12 +26,20 @@ public class UserController {
      * Create a new user
      */
     @PostMapping
-    public ResponseEntity<User> createUser(@RequestBody User user) {
+    public ResponseEntity<?> createUser(@RequestBody User user) {
         try {
             User createdUser = userService.createUser(user);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
+        } catch (RuntimeException e) {
+            if (e.getMessage().contains("Username already exists")) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("{\"error\": \"" + e.getMessage() + "\"}");
+            }
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body("{\"error\": \"" + e.getMessage() + "\"}");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("{\"error\": \"Internal server error\"}");
         }
     }
 
