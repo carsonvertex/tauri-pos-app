@@ -1,10 +1,12 @@
 import { Backspace, North, South } from "@mui/icons-material";
 import { Card, CardActionArea } from "@mui/material";
 
-export function NumberPad() {
-  const handleNumberClick = (number: string) => {
-    console.log(number);
-  };
+interface NumberPadProps {
+  setInputValue: React.Dispatch<React.SetStateAction<string>>;
+  inputRef: React.RefObject<HTMLInputElement | null>;
+}
+
+export function NumberPad({ setInputValue, inputRef }: NumberPadProps) {
   const numberPad = [
     "7",
     "8",
@@ -19,6 +21,28 @@ export function NumberPad() {
     ".",
     "00",
   ];
+
+  const handleNumberClick = (number: string) => {
+    setInputValue((prev: string) => prev + number);
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  };
+
+  const handleBackspace = () => {
+    setInputValue((prev: string) => prev.slice(0, -1));
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  };
+
+  const handleClear = () => {
+    setInputValue("");
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  };
+
   return (
     <div className="grid grid-cols-6 h-full  ">
       {/* Arrow Pad */}
@@ -42,9 +66,15 @@ export function NumberPad() {
       {/* Number Pad */}
       <div className="col-span-3    grid grid-cols-3">
         {numberPad.map((number) => (
-          <Card className="flex items-center justify-center border border-gray-300">
+          <Card
+            key={number}
+            className="flex items-center justify-center border border-gray-300"
+          >
             <CardActionArea
-              onClick={() => handleNumberClick(number)}
+              onMouseDown={(e) => {
+                e.preventDefault(); // Prevent focus loss
+                handleNumberClick(number);
+              }}
               className="w-full h-full flex items-center justify-center"
             >
               <span className="text-2xl flex items-center justify-center">
@@ -58,21 +88,40 @@ export function NumberPad() {
       {/* Action Pad */}
       <div className="col-span-2  border border-gray-300 grid grid-cols-2">
         <Card className="border border-gray-300">
-          <CardActionArea className="w-full h-full flex items-center justify-center">
+          <CardActionArea
+            onMouseDown={(e) => {
+              e.preventDefault();
+              handleBackspace();
+            }}
+            className="w-full h-full flex items-center justify-center"
+          >
             <span className="text-2xl flex items-center justify-center">
               <Backspace />{" "}
             </span>
           </CardActionArea>
         </Card>
         <Card className="border border-gray-300">
-          <CardActionArea className="w-full h-full flex items-center justify-center">
+          <CardActionArea
+            onMouseDown={(e) => {
+              e.preventDefault();
+              handleClear();
+            }}
+            className="w-full h-full flex items-center justify-center"
+          >
             <span className="text-2xl flex items-center justify-center">
               {"Esc"}
             </span>
           </CardActionArea>
         </Card>
         <Card className="col-span-2 border border-gray-300">
-          <CardActionArea className="w-full h-full flex items-center justify-center">
+          <CardActionArea
+            onMouseDown={(e) => {
+              e.preventDefault();
+              // Handle Enter action here if needed
+              console.log("Enter pressed");
+            }}
+            className="w-full h-full flex items-center justify-center"
+          >
             <span className="text-2xl flex items-center justify-center">
               {"Enter"}
             </span>
