@@ -111,11 +111,10 @@ public class DatabaseInitController {
                 updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
             );
 
-            -- Insert default user data
+            -- Insert default user data with proper BCrypt hashes
             INSERT INTO users (userid, username, hashed_password, permission, created_at, updated_at) VALUES
-            (2, 'testuser', '\\\\\\.IjdQj8Kz8Kz8Kz8Kz8Kz8Kz8Kz8Kz8K', 'user', '2025-09-10 07:30:41', '2025-09-10 07:30:41'),
-            (3, 'admin', '$2a$10$WMoSdoKBdONd0Nq39g8AJ.XQ28MjrdS09SbIZVdm0qarEM2QT3DjW', 'admin', NULL, NULL),
-            (4, 'user1', '$2a$10$WMoSdoKBdONd0Nq39g8AJ.XQ28MjrdS09SbIZVdm0qarEM2QT3DjW', 'user', '2025-09-10 07:51:43', '2025-09-10 07:51:43');
+            (1, 'admin', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin', '2025-01-01 00:00:00', '2025-01-01 00:00:00'),
+            (2, 'testuser', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', '2025-01-01 00:00:00', '2025-01-01 00:00:00');
 
             -- Create local SQLite tables (mirroring MySQL entities with local_ prefix)
             CREATE TABLE local_product (

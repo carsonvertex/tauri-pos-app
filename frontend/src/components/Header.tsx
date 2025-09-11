@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import { BackendStatus, SyncStatusSummary } from "../types";
-import { OfflineStatus } from "./OfflineStatus";
+import { BackendStatus } from "../types";
 import { useAuth } from "../contexts/AuthContext";
 import {
   Logout,
@@ -8,10 +7,8 @@ import {
   Warning,
   CheckCircle,
   Error,
-  Sync,
-  Storage,
 } from "@mui/icons-material";
-import { Button, Chip, Snackbar, Alert } from "@mui/material";
+import { Button, Snackbar, Alert } from "@mui/material";
 import NavDrawer from "./NavDrawer";
 
 interface HeaderProps {
@@ -25,7 +22,6 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({
   backendStatus,
   tauriAvailable,
-  isOnline,
   isRestarting,
   onManualReconnect,
 }) => {
@@ -116,8 +112,6 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           )}
 
-          {/* Sync Status */}
-          <OfflineStatus isOnline={isOnline} />
         </div>
 
         {/* Right Section - User Info and Logout */}

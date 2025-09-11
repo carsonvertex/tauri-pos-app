@@ -64,7 +64,7 @@ public class UserServiceImpl implements UserService {
             return UserMapper.INSTANCE.userEntityToUser(userEntity);
         }
         
-        return null; // Password doesn't match
+        return null; 
     }
 
     @Override
