@@ -25,22 +25,22 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .cors().and()
-            .csrf().disable()
-            .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            .and()
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .csrf(csrf -> csrf.disable())
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authz -> authz
-                .requestMatchers("/pos/**").permitAll()
-                .requestMatchers("/api/pos/**").permitAll()
-                .requestMatchers("/offline/**").permitAll()
-                .requestMatchers("/api/offline/**").permitAll()
-                .requestMatchers("/api/local-orderItem/**").permitAll()
-                .requestMatchers("/api/adjustment-detail/**").permitAll()
-                .requestMatchers("/api/users/authenticate").permitAll()
-                .requestMatchers("/api/users/health").permitAll()
-                .requestMatchers("/api/test/**").permitAll()
-                .requestMatchers("/error").permitAll()
-                .anyRequest().authenticated()
+                // .requestMatchers("/pos/**").permitAll()
+                // .requestMatchers("/api/pos/**").permitAll()
+                // .requestMatchers("/offline/**").permitAll()
+                // .requestMatchers("/api/offline/**").permitAll()
+                // .requestMatchers("/api/local-orderItem/**").permitAll()
+                // .requestMatchers("/api/adjustment-detail/**").permitAll()
+                // .requestMatchers("/api/users/authenticate").permitAll()
+                // .requestMatchers("/api/users/health").permitAll()
+                // .requestMatchers("/api/test/**").permitAll()
+                // .requestMatchers("/error").permitAll()
+                // .anyRequest().authenticated()
+                .anyRequest().permitAll() 
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         
