@@ -129,12 +129,20 @@ public class UserController {
      * Delete a user by ID
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Integer id) {
+    public ResponseEntity<?> deleteUser(@PathVariable Integer id) {
         try {
             userService.deleteUserById(id);
             return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            if (e.getMessage().contains("Cannot delete admin user")) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("{\"error\": \"" + e.getMessage() + "\"}");
+            }
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body("{\"error\": \"" + e.getMessage() + "\"}");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("{\"error\": \"Internal server error\"}");
         }
     }
 

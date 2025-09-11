@@ -111,6 +111,14 @@ public class UserServiceImpl implements UserService {
     public void deleteUserById(Integer userid) {
         userDao.findById(userid)
                 .map(entity -> {
+                    // Check if trying to delete an admin user
+                    if ("admin".equals(entity.getPermission())) {
+                        long adminCount = countAdminUsers();
+                        if (adminCount <= 1) {
+                            throw new RuntimeException("Cannot delete admin user. There must be at least one admin user in the system.");
+                        }
+                    }
+                    
                     userDao.deleteById(userid);
                     return true;
                 });

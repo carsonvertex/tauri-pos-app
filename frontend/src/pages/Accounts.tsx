@@ -24,6 +24,7 @@ import { visuallyHidden } from "@mui/utils";
 import { getAllUsers } from "../api/sqlite-api/users-api";
 import AddUserModal from "../components/AddUserModal";
 import EditUserModal from "../components/EditUserModal";
+import DeleteUserConfirmationModal from "../components/DeleteUserConfirmationModal";
 
 // User interface matching API response
 interface User {
@@ -78,24 +79,18 @@ const headCells: readonly HeadCell[] = [
 ];
 
 interface EnhancedTableProps {
-  numSelected: number;
   onRequestSort: (
     event: React.MouseEvent<unknown>,
     property: keyof User
   ) => void;
-  onSelectAllClick: (event: React.ChangeEvent<HTMLInputElement>) => void;
   order: Order;
   orderBy: string;
-  rowCount: number;
 }
 
 function EnhancedTableHead(props: EnhancedTableProps) {
   const {
-    onSelectAllClick,
     order,
     orderBy,
-    numSelected,
-    rowCount,
     onRequestSort,
   } = props;
   
@@ -108,15 +103,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
     <TableHead>
       <TableRow>
         <TableCell padding="checkbox">
-          <Checkbox
-            color="primary"
-            indeterminate={numSelected > 0 && numSelected < rowCount}
-            checked={rowCount > 0 && numSelected === rowCount}
-            onChange={onSelectAllClick}
-            inputProps={{
-              "aria-label": "select all users",
-            }}
-          />
+          {/* Single selection - no select all checkbox */}
         </TableCell>
         {headCells.map((headCell) => (
           <TableCell
@@ -175,7 +162,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
           variant="subtitle1"
           component="div"
         >
-          {numSelected} selected
+          1 user selected
         </Typography>
       ) : (
         <Typography
@@ -257,13 +244,14 @@ function stableSort<T>(
 const Accounts: React.FC = () => {
   const [order, setOrder] = React.useState<Order>("asc");
   const [orderBy, setOrderBy] = React.useState<keyof User>("userid");
-  const [selected, setSelected] = React.useState<readonly number[]>([]);
+  const [selected, setSelected] = React.useState<number | null>(null);
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const [users, setUsers] = React.useState<User[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [addUserModalOpen, setAddUserModalOpen] = React.useState(false);
   const [editUserModalOpen, setEditUserModalOpen] = React.useState(false);
+  const [deleteUserModalOpen, setDeleteUserModalOpen] = React.useState(false);
   const [selectedUser, setSelectedUser] = React.useState<User | null>(null);
 
   // Fetch users from API
@@ -284,7 +272,7 @@ const Accounts: React.FC = () => {
   }, []);
 
   const handleRequestSort = (
-    event: React.MouseEvent<unknown>,
+    _event: React.MouseEvent<unknown>,
     property: keyof User
   ) => {
     const isAsc = orderBy === property && order === "asc";
@@ -292,36 +280,24 @@ const Accounts: React.FC = () => {
     setOrderBy(property);
   };
 
-  const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.checked) {
-      const newSelected = users.map((n) => n.userid);
-      setSelected(newSelected);
+
+  const handleClick = (_event: React.MouseEvent<unknown>, id: number) => {
+    // Find the user to check if they're an admin
+    const user = users.find(u => u.userid === id);
+    if (user && user.permission === 'admin') {
+      // Don't allow selection of admin users
       return;
     }
-    setSelected([]);
-  };
 
-  const handleClick = (event: React.MouseEvent<unknown>, id: number) => {
-    const selectedIndex = selected.indexOf(id);
-    let newSelected: readonly number[] = [];
-
-    if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, id);
-    } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(selected.slice(1));
-    } else if (selectedIndex === selected.length - 1) {
-      newSelected = newSelected.concat(selected.slice(0, -1));
-    } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(
-        selected.slice(0, selectedIndex),
-        selected.slice(selectedIndex + 1)
-      );
+    // Single selection: if clicking the same row, deselect; otherwise select the new row
+    if (selected === id) {
+      setSelected(null);
+    } else {
+      setSelected(id);
     }
-
-    setSelected(newSelected);
   };
 
-  const handleChangePage = (event: unknown, newPage: number) => {
+  const handleChangePage = (_event: unknown, newPage: number) => {
     setPage(newPage);
   };
 
@@ -353,8 +329,31 @@ const Accounts: React.FC = () => {
   };
 
   const handleDeleteSelected = () => {
-    // TODO: Implement delete selected users functionality
-    console.log("Delete selected:", selected);
+    // Single user deletion
+    if (selected !== null) {
+      const userToDelete = users.find(user => user.userid === selected);
+      if (userToDelete) {
+        setSelectedUser(userToDelete);
+        setDeleteUserModalOpen(true);
+      }
+    }
+  };
+
+  const handleUserDeleted = () => {
+    // Refresh the users list
+    const fetchUsers = async () => {
+      try {
+        setLoading(true);
+        const usersData = await getAllUsers();
+        setUsers(usersData);
+        setSelected(null); // Clear selection
+      } catch (error) {
+        console.error("Failed to fetch users:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUsers();
   };
 
   const handleEditUser = (user: User) => {
@@ -378,7 +377,7 @@ const Accounts: React.FC = () => {
     fetchUsers();
   };
 
-  const isSelected = (id: number) => selected.indexOf(id) !== -1;
+  const isSelected = (id: number) => selected === id;
 
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - users.length) : 0;
@@ -421,7 +420,7 @@ const Accounts: React.FC = () => {
     <Box sx={{ width: "100%" }}>
       <Paper sx={{ width: "100%", mb: 2 }}>
         <EnhancedTableToolbar
-          numSelected={selected.length}
+          numSelected={selected !== null ? 1 : 0}
           onAddUser={handleAddUser}
           onDeleteSelected={handleDeleteSelected}
         />
@@ -432,12 +431,9 @@ const Accounts: React.FC = () => {
             size="medium"
           >
             <EnhancedTableHead
-              numSelected={selected.length}
               order={order}
               orderBy={orderBy}
-              onSelectAllClick={handleSelectAllClick}
               onRequestSort={handleRequestSort}
-              rowCount={users.length}
             />
             <TableBody>
               {visibleRows.map((row: any, index) => {
@@ -459,6 +455,7 @@ const Accounts: React.FC = () => {
                       <Checkbox
                         color="primary"
                         checked={isItemSelected}
+                        disabled={row.permission === 'admin'}
                         inputProps={{
                           "aria-labelledby": labelId,
                         }}
@@ -531,6 +528,13 @@ const Accounts: React.FC = () => {
         open={editUserModalOpen}
         onClose={() => setEditUserModalOpen(false)}
         onUserUpdated={handleUserUpdated}
+        user={selectedUser}
+      />
+      
+      <DeleteUserConfirmationModal
+        open={deleteUserModalOpen}
+        onClose={() => setDeleteUserModalOpen(false)}
+        onUserDeleted={handleUserDeleted}
         user={selectedUser}
       />
     </Box>

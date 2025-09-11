@@ -115,3 +115,32 @@ export const getAdminCount = async (): Promise<number> => {
     throw error;
   }
 }
+
+export interface DeleteUserResponse {
+  success: boolean;
+  message: string;
+}
+
+export const deleteUser = async (userId: number): Promise<DeleteUserResponse> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+      method: 'DELETE',
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `Error: ${response.statusText}`);
+    }
+
+    return {
+      success: true,
+      message: 'User deleted successfully'
+    };
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Failed to delete user'
+    };
+  }
+}
