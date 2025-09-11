@@ -18,10 +18,7 @@ const ConditionalHeader: React.FC<{
   backendStatus: any;
   tauriAvailable: boolean;
   isOnline: boolean;
-  syncStatus: any;
   isRestarting: boolean;
-  onForceSync: () => Promise<boolean>;
-  onManualSync: () => Promise<boolean>;
   onManualReconnect: () => Promise<void>;
 }> = (props) => {
   const location = useLocation();
@@ -51,11 +48,8 @@ function App() {
     backendStatus,
     tauriAvailable,
     isOnline,
-    syncStatus,
     isRestarting,
-    forceSync,
-    manualSync,
-    manualReconnect,
+     manualReconnect,
   } = useTauri();
 
   return (
@@ -67,10 +61,7 @@ function App() {
               backendStatus={backendStatus}
               tauriAvailable={tauriAvailable}
               isOnline={isOnline}
-              syncStatus={syncStatus}
               isRestarting={isRestarting}
-              onForceSync={forceSync}
-              onManualSync={manualSync}
               onManualReconnect={manualReconnect}
             />
             <main className="app-main">

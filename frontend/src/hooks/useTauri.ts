@@ -6,7 +6,6 @@ export const useTauri = () => {
   const [backendStatus, setBackendStatus] = useState<BackendStatus>({ running: false });
   const [tauriAvailable, setTauriAvailable] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
-  const [syncStatus, setSyncStatus] = useState<any | null>(null);
   const [isRestarting, setIsRestarting] = useState(false);
   const backendStatusRef = useRef<BackendStatus>({ running: false });
   const intervalRef = useRef<number | null>(null);
@@ -26,7 +25,6 @@ export const useTauri = () => {
     
     // Check backend status when component mounts
     checkBackendStatus();
-    checkSyncStatus();
     
     return () => {
       if (intervalRef.current) {
@@ -84,49 +82,7 @@ export const useTauri = () => {
     }
   };
 
-  const checkSyncStatus = async () => {
-    try {
-      console.log('Checking sync status...');
-      const response = await fetch('http://localhost:8080/api/offline/sync/status', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      
-      console.log('Sync status response:', response.status, response.statusText);
-      
-      if (response.ok) {
-        const status = await response.json();
-        setSyncStatus(status);
-        console.log('Sync status updated:', status);
-      } else {
-        // If sync endpoint fails, create a default status
-        console.log('Sync endpoint not available, using default status');
-        setSyncStatus({
-          pendingProducts: 0,
-          pendingOrders: 0,
-          failedProducts: 0,
-          failedOrders: 0,
-          totalPending: 0,
-          totalFailed: 0,
-          totalSynced: 0
-        });
-      }
-    } catch (error) {
-      console.error('Failed to get sync status:', error);
-      // Set default status on error
-      setSyncStatus({
-        pendingProducts: 0,
-        pendingOrders: 0,
-        failedProducts: 0,
-        failedOrders: 0,
-        totalPending: 0,
-        totalFailed: 0,
-        totalSynced: 0
-      });
-    }
-  };
+ 
 
   const startBackend = async () => {
     try {
@@ -145,43 +101,8 @@ export const useTauri = () => {
       console.error('Failed to stop backend:', error);
     }
   };
-
-  const forceSync = async () => {
-    try {
-      const response = await fetch('http://localhost:8080/api/offline/sync/force', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      
-      if (response.ok) {
-        await checkSyncStatus();
-        return true;
-      }
-      return false;
-    } catch (error) {
-      console.error('Failed to force sync:', error);
-      return false;
-    }
-  };
-
-  const manualSync = async () => {
-    try {
-      // First refresh sync status
-      await checkSyncStatus();
-      
-      // Then perform sync if there are pending items
-      if (syncStatus && (syncStatus.totalPending > 0 || syncStatus.totalFailed > 0)) {
-        return await forceSync();
-      }
-      
-      return true;
-    } catch (error) {
-      console.error('Failed to perform manual sync:', error);
-      return false;
-    }
-  };
+ 
+  
 
   const restartBackend = async () => {
     if (!tauriAvailable) {
@@ -209,13 +130,7 @@ export const useTauri = () => {
       setBackendStatus(result);
       backendStatusRef.current = result;
       
-      // Wait a bit for the backend to fully start, then check sync status
-      if (result.running) {
-        console.log('Backend started successfully, will check sync status in 2 seconds...');
-        setTimeout(async () => {
-          await checkSyncStatus();
-        }, 2000);
-      }
+     
       
       return result.running;
     } catch (error) {
@@ -245,9 +160,6 @@ export const useTauri = () => {
       await checkBackendStatus();
     }
     
-    // Always check sync status after reconnect attempt
-    console.log('Checking sync status after reconnect...');
-    await checkSyncStatus();
     
     // Provide user feedback
     if (backendStatusRef.current.running) {
@@ -261,14 +173,11 @@ export const useTauri = () => {
     backendStatus,
     tauriAvailable,
     isOnline,
-    syncStatus,
     isRestarting,
     startBackend,
     stopBackend,
     restartBackend,
     checkBackendStatus,
-    forceSync,
-    manualSync,
     manualReconnect
   };
 };

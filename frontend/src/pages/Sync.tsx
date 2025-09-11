@@ -1,4 +1,4 @@
-import React from 'react';
+import { useState } from 'react';
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
@@ -6,12 +6,17 @@ import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
 import RefreshIcon from "@mui/icons-material/Refresh";
-import { useQuery } from '@tanstack/react-query';
+import SyncIcon from "@mui/icons-material/Sync";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getLocalProductsCount } from '../api/sqlite-api/localProduct-api';
 import { getLocalProductBarcodesCount } from '../api/sqlite-api/localProductBarcode-api';
 import { getLocalProductDescriptionsCount } from '../api/sqlite-api/localProductDescription-api';
+import { syncProducts, SyncResult } from '../api/sync-api';
 
 export default function Sync() {
+  const queryClient = useQueryClient();
+  const [syncResult, setSyncResult] = useState<SyncResult | null>(null);
+
   // TanStack Query hooks for each count
   const { 
     data: productsCount = 0, 
@@ -49,6 +54,30 @@ export default function Sync() {
     refetchOnWindowFocus: false,
   });
 
+  // Sync mutation
+  const syncMutation = useMutation({
+    mutationFn: syncProducts,
+    onSuccess: (result) => {
+      setSyncResult(result);
+      // Refresh all counts after successful sync
+      queryClient.invalidateQueries({ queryKey: ['localProductsCount'] });
+      queryClient.invalidateQueries({ queryKey: ['localProductBarcodesCount'] });
+      queryClient.invalidateQueries({ queryKey: ['localProductDescriptionsCount'] });
+    },
+    onError: (error) => {
+      setSyncResult({
+        success: false,
+        message: 'Sync failed',
+        details: {
+          products: { fetched: 0, synced: 0, errors: 0 },
+          barcodes: { fetched: 0, synced: 0, errors: 0 },
+          descriptions: { fetched: 0, synced: 0, errors: 0 }
+        },
+        errors: [error instanceof Error ? error.message : 'Unknown error']
+      });
+    }
+  });
+
   const usersCount = 3; // Default users count from database initialization
 
   // Combined loading state
@@ -65,6 +94,12 @@ export default function Sync() {
     refetchDescriptions();
   };
 
+  // Handle sync button click
+  const handleSync = () => {
+    setSyncResult(null);
+    syncMutation.mutate();
+  };
+
   const totalRecords = productsCount + barcodesCount + descriptionsCount + usersCount;
 
   return (
@@ -74,20 +109,74 @@ export default function Sync() {
         <Typography variant="h4" component="h1" gutterBottom>
           Database Sync Status
         </Typography>
-        <Button
-          variant="contained"
-          startIcon={<RefreshIcon />}
-          onClick={refreshAll}
-          disabled={isLoading}
-        >
-          Refresh
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outlined"
+            startIcon={<SyncIcon />}
+            onClick={handleSync}
+            disabled={syncMutation.isPending}
+            color="primary"
+          >
+            {syncMutation.isPending ? 'Syncing...' : 'Sync from MySQL'}
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<RefreshIcon />}
+            onClick={refreshAll}
+            disabled={isLoading}
+          >
+            Refresh
+          </Button>
+        </div>
       </div>
 
       {/* Error Alert */}
       {error && (
         <Alert severity="error" className="mb-6">
           {errorMessage}
+        </Alert>
+      )}
+
+      {/* Sync Result Alert */}
+      {syncResult && (
+        <Alert 
+          severity={syncResult.success ? "success" : "warning"} 
+          className="mb-6"
+        >
+          <Typography variant="h6" gutterBottom>
+            {syncResult.message}
+          </Typography>
+          <div className="mt-2">
+            <Typography variant="body2">
+              <strong>Products:</strong> {syncResult.details.products.synced}/{syncResult.details.products.fetched} synced
+              {syncResult.details.products.errors > 0 && ` (${syncResult.details.products.errors} errors)`}
+            </Typography>
+            <Typography variant="body2">
+              <strong>Barcodes:</strong> {syncResult.details.barcodes.synced}/{syncResult.details.barcodes.fetched} synced
+              {syncResult.details.barcodes.errors > 0 && ` (${syncResult.details.barcodes.errors} errors)`}
+            </Typography>
+            <Typography variant="body2">
+              <strong>Descriptions:</strong> {syncResult.details.descriptions.synced}/{syncResult.details.descriptions.fetched} synced
+              {syncResult.details.descriptions.errors > 0 && ` (${syncResult.details.descriptions.errors} errors)`}
+            </Typography>
+          </div>
+          {syncResult.errors.length > 0 && (
+            <div className="mt-2">
+              <Typography variant="body2" color="error">
+                <strong>Errors:</strong>
+              </Typography>
+              {syncResult.errors.slice(0, 5).map((error, index) => (
+                <Typography key={index} variant="caption" display="block" color="error">
+                  • {error}
+                </Typography>
+              ))}
+              {syncResult.errors.length > 5 && (
+                <Typography variant="caption" color="error">
+                  ... and {syncResult.errors.length - 5} more errors
+                </Typography>
+              )}
+            </div>
+          )}
         </Alert>
       )}
 
