@@ -24,6 +24,7 @@ import java.util.Map;
     transactionManagerRef = "mysqlTransactionManager",
     basePackages = {"com.tauri.pos.mysql.persistance.dao"}
 )
+@ConditionalOnProperty(name = "spring.datasource.mysql.enabled", havingValue = "true", matchIfMissing = false)
 public class MysqlConfig {
 
     @Bean(name = "mysqlDataSource")

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { BackendStatus, SyncStatusSummary } from "../types";
 import { OfflineStatus } from "./OfflineStatus";
 import { useAuth } from "../contexts/AuthContext";
@@ -9,8 +9,9 @@ import {
   CheckCircle,
   Error,
   Sync,
+  Storage,
 } from "@mui/icons-material";
-import { Button, Chip } from "@mui/material";
+import { Button, Chip, Snackbar, Alert } from "@mui/material";
 import NavDrawer from "./NavDrawer";
 
 interface HeaderProps {
@@ -35,10 +36,44 @@ export const Header: React.FC<HeaderProps> = ({
   onManualReconnect,
 }) => {
   const { user, logout } = useAuth();
+  const [isInitializing, setIsInitializing] = useState(false);
+  const [initMessage, setInitMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
   const handleLogout = () => {
     logout();
     window.location.href = "/login";
+  };
+
+  const handleDatabaseInit = async () => {
+    if (!backendStatus.running) {
+      setInitMessage({ type: 'error', text: 'Backend server is not running' });
+      return;
+    }
+
+    setIsInitializing(true);
+    try {
+      const response = await fetch('/api/database/init', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        setInitMessage({ 
+          type: 'success', 
+          text: `Database initialized successfully! ${result.backupCreated ? 'Backup created.' : ''}` 
+        });
+      } else {
+        setInitMessage({ type: 'error', text: result.message || 'Failed to initialize database' });
+      }
+    } catch (error) {
+      setInitMessage({ type: 'error', text: 'Failed to connect to backend server' });
+    } finally {
+      setIsInitializing(false);
+    }
   };
 
   return (
@@ -134,6 +169,25 @@ export const Header: React.FC<HeaderProps> = ({
               <span>Sync</span>
             </Button>
           )}
+
+          {/* Database Initialization button when backend is running */}
+          {backendStatus.running && (
+            <button
+              onClick={handleDatabaseInit}
+              disabled={isInitializing}
+              className={`flex items-center space-x-1 px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+                isInitializing
+                  ? "bg-gray-100 text-gray-500 cursor-not-allowed"
+                  : "bg-purple-100 text-purple-700 hover:bg-purple-200"
+              }`}
+              title="Initialize database with new product tables"
+            >
+              <Storage
+                className={`w-4 h-4 ${isInitializing ? "animate-spin" : ""}`}
+              />
+              <span>{isInitializing ? "Initializing..." : "Init DB"}</span>
+            </button>
+          )}
         </div>
 
         {/* Right Section - User Info and Logout */}
@@ -169,6 +223,22 @@ export const Header: React.FC<HeaderProps> = ({
           )}
         </div>
       </div>
+
+      {/* Snackbar for database initialization messages */}
+      <Snackbar
+        open={!!initMessage}
+        autoHideDuration={6000}
+        onClose={() => setInitMessage(null)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setInitMessage(null)}
+          severity={initMessage?.type === 'success' ? 'success' : 'error'}
+          sx={{ width: '100%' }}
+        >
+          {initMessage?.text}
+        </Alert>
+      </Snackbar>
     </header>
   );
 };
