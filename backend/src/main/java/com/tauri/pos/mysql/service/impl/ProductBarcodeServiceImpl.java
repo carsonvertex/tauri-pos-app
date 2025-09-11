@@ -44,15 +44,15 @@ public class ProductBarcodeServiceImpl implements ProductBarcodeService {
     @Override
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public ProductBarcode getProductBarcodeById(Integer productId, String barcode) {
-        return productBarcodeDao.findByProductIdAndBarcode(productId, barcode)
+        return productBarcodeDao.findById(new com.tauri.pos.mysql.persistance.eo.ProductBarcodeId(productId, barcode))
                 .map(ProductBarcodeMapper.INSTANCE::productBarcodeEntityToProductBarcode)
                 .orElse(null);
     }
 
     @Override
     @Transactional(transactionManager = "mysqlTransactionManager")
-    public ProductBarcode updateProductBarcode(Integer productId, String barcode, ProductBarcode productBarcode) {
-        return productBarcodeDao.findByProductIdAndBarcode(productId, barcode)
+    public ProductBarcode updateProductBarcodeById(Integer productId, String barcode, ProductBarcode productBarcode) {
+        return productBarcodeDao.findById(new com.tauri.pos.mysql.persistance.eo.ProductBarcodeId(productId, barcode))
                 .map(entity -> {
                     ProductBarcodeEntity updatedEntity = ProductBarcodeMapper.INSTANCE.productBarcodeToProductBarcodeEntity(productBarcode);
                     updatedEntity.setProductId(productId);
@@ -65,10 +65,10 @@ public class ProductBarcodeServiceImpl implements ProductBarcodeService {
 
     @Override
     @Transactional(transactionManager = "mysqlTransactionManager")
-    public void deleteProductBarcode(Integer productId, String barcode) {
-        productBarcodeDao.findByProductIdAndBarcode(productId, barcode)
+    public void deleteProductBarcodeById(Integer productId, String barcode) {
+        productBarcodeDao.findById(new com.tauri.pos.mysql.persistance.eo.ProductBarcodeId(productId, barcode))
                 .map(entity -> {
-                    productBarcodeDao.deleteByProductIdAndBarcode(productId, barcode);
+                    productBarcodeDao.deleteById(new com.tauri.pos.mysql.persistance.eo.ProductBarcodeId(productId, barcode));
                     return true;
                 });
     }
@@ -93,124 +93,6 @@ public class ProductBarcodeServiceImpl implements ProductBarcodeService {
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public List<ProductBarcode> getProductBarcodesByStatus(Integer status) {
         return productBarcodeDao.findByStatus(status).stream()
-                .map(ProductBarcodeMapper.INSTANCE::productBarcodeEntityToProductBarcode)
-                .toList();
-    }
-
-    @Override
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public List<ProductBarcode> getProductBarcodesByCreatedBy(Integer createdBy) {
-        return productBarcodeDao.findByCreatedBy(createdBy).stream()
-                .map(ProductBarcodeMapper.INSTANCE::productBarcodeEntityToProductBarcode)
-                .toList();
-    }
-
-    @Override
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public List<ProductBarcode> getProductBarcodesByUpdatedBy(Integer updatedBy) {
-        return productBarcodeDao.findByUpdatedBy(updatedBy).stream()
-                .map(ProductBarcodeMapper.INSTANCE::productBarcodeEntityToProductBarcode)
-                .toList();
-    }
-
-    @Override
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public List<ProductBarcode> getProductBarcodesByProductIdAndStatus(Integer productId, Integer status) {
-        return productBarcodeDao.findByProductIdAndStatus(productId, status).stream()
-                .map(ProductBarcodeMapper.INSTANCE::productBarcodeEntityToProductBarcode)
-                .toList();
-    }
-
-    @Override
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public List<ProductBarcode> searchProductBarcodesByBarcodeContaining(String barcode) {
-        return productBarcodeDao.findByBarcodeContaining(barcode).stream()
-                .map(ProductBarcodeMapper.INSTANCE::productBarcodeEntityToProductBarcode)
-                .toList();
-    }
-
-    @Override
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public List<ProductBarcode> getProductBarcodesByStatusAndCreatedBy(Integer status, Integer createdBy) {
-        return productBarcodeDao.findByStatusAndCreatedBy(status, createdBy).stream()
-                .map(ProductBarcodeMapper.INSTANCE::productBarcodeEntityToProductBarcode)
-                .toList();
-    }
-
-    @Override
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public boolean existsByProductIdAndBarcode(Integer productId, String barcode) {
-        return productBarcodeDao.existsByProductIdAndBarcode(productId, barcode);
-    }
-
-    @Override
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public boolean existsByBarcode(String barcode) {
-        return productBarcodeDao.existsByBarcode(barcode);
-    }
-
-    @Override
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public List<ProductBarcode> getProductBarcodesByProductIds(List<Integer> productIds) {
-        return productBarcodeDao.findByProductIdIn(productIds).stream()
-                .map(ProductBarcodeMapper.INSTANCE::productBarcodeEntityToProductBarcode)
-                .toList();
-    }
-
-    @Override
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public List<ProductBarcode> getProductBarcodesByBarcodes(List<String> barcodes) {
-        return productBarcodeDao.findByBarcodeIn(barcodes).stream()
-                .map(ProductBarcodeMapper.INSTANCE::productBarcodeEntityToProductBarcode)
-                .toList();
-    }
-
-    @Override
-    @Transactional(transactionManager = "mysqlTransactionManager")
-    public void deleteProductBarcodesByProductId(Integer productId) {
-        productBarcodeDao.deleteByProductId(productId);
-    }
-
-    @Override
-    @Transactional(transactionManager = "mysqlTransactionManager")
-    public void deleteProductBarcodesByBarcode(String barcode) {
-        productBarcodeDao.deleteByBarcode(barcode);
-    }
-
-    @Override
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public long countProductBarcodesByProductId(Integer productId) {
-        return productBarcodeDao.countByProductId(productId);
-    }
-
-    @Override
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public long countProductBarcodesByBarcode(String barcode) {
-        return productBarcodeDao.countByBarcode(barcode);
-    }
-
-    @Override
-    @Transactional(transactionManager = "mysqlTransactionManager")
-    public ProductBarcode updateProductBarcodeStatus(Integer productId, String barcode, Integer status) {
-        return productBarcodeDao.findByProductIdAndBarcode(productId, barcode)
-                .map(entity -> {
-                    entity.setStatus(status);
-                    entity.setUpdatedAt(LocalDateTime.now());
-                    return ProductBarcodeMapper.INSTANCE.productBarcodeEntityToProductBarcode(productBarcodeDao.save(entity));
-                })
-                .orElse(null);
-    }
-
-    @Override
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public List<ProductBarcode> getProductBarcodesByDateRange(LocalDateTime startDate, LocalDateTime endDate) {
-        return productBarcodeDao.findAll().stream()
-                .filter(entity -> {
-                    LocalDateTime createdAt = entity.getCreatedAt();
-                    return createdAt != null && 
-                           createdAt.isAfter(startDate) && 
-                           createdAt.isBefore(endDate);
-                })
                 .map(ProductBarcodeMapper.INSTANCE::productBarcodeEntityToProductBarcode)
                 .toList();
     }
