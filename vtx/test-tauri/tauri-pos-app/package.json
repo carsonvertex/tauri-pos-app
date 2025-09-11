@@ -7,11 +7,12 @@
     "dev": "concurrently \"npm run frontend:dev\" \"npm run backend:dev\"",
     "frontend:dev": "cd frontend && npm run dev",
     "frontend:build": "cd frontend && npm run build",
-    "backend:dev": "cd backend && mvn spring-boot:run",
-    "backend:build": "cd backend && mvn clean package",
-    "tauri:dev": "tauri dev",
+    "backend:dev": "powershell -ExecutionPolicy Bypass -File backend/run-backend.ps1",
+    "backend:build": "powershell -ExecutionPolicy Bypass -File backend/run-backend.ps1 -build",
+    "tauri:frontend": "tauri dev",
+    "tauri:dev": "concurrently \"tauri dev\" \"npm run backend:dev\"",
     "tauri:build": "tauri build",
-    "build": "npm run frontend:build && npm run backend:build && npm run tauri:build",
+    "tauri:with-backend": "powershell -ExecutionPolicy Bypass -File start-tauri-with-backend-editor.ps1",
     "install:all": "npm install && cd frontend && npm install && cd ../backend && mvn dependency:resolve",
     "clean": "rimraf dist build target"
   },
@@ -28,6 +29,17 @@
   "devDependencies": {
     "@tauri-apps/cli": "^1.5.0",
     "concurrently": "^8.2.2",
+    "eslint-plugin-react-hooks": "^5.2.0",
     "rimraf": "^5.0.10"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.1.13",
+    "@types/jsonwebtoken": "^9.0.10",
+    "bcrypt": "^6.0.0",
+    "bcryptjs-react": "^2.4.6",
+    "jsonwebtoken": "^9.0.2",
+    "react-login-page": "^1.0.6",
+    "react-router-dom": "^7.8.2",
+    "tailwindcss": "^4.1.13"
   }
 }

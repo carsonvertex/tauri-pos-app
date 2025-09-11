@@ -33,6 +33,13 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 
+# Portable distribution (contains large JRE files)
+dist-portable-standalone/
+dist-portable-standalone/jre/
+dist-portable-standalone/*.exe
+dist-portable-standalone/*.jar
+dist-portable-standalone/launcher-debug.log
+
 # Cargo
 Cargo.lock
 
