@@ -43,7 +43,7 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Left Section - App Title */}
         <div className="col-span-4 mx-4 gap-2 flex items-center space-x-2">
           <NavDrawer />
-          <h1 className="text-xl font-bold text-gray-800">RC Mart POS</h1>
+          <h1 className="text-xl font-bold text-gray-800">RC Mart POS test</h1>
         </div>
 
         {/* Center Section - Status Indicators */}
