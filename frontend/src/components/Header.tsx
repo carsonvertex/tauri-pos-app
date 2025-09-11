@@ -30,7 +30,10 @@ export const Header: React.FC<HeaderProps> = ({
   onManualReconnect,
 }) => {
   const { user, logout } = useAuth();
-  const [initMessage, setInitMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  const [initMessage, setInitMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
 
   const handleLogout = () => {
     logout();
@@ -43,7 +46,7 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Left Section - App Title */}
         <div className="col-span-4 mx-4 gap-2 flex items-center space-x-2">
           <NavDrawer />
-          <h1 className="text-xl font-bold text-gray-800">RC Mart POS test</h1>
+          <h1 className="text-xl font-bold text-gray-800">RC Mart POS </h1>
         </div>
 
         {/* Center Section - Status Indicators */}
@@ -114,12 +117,7 @@ export const Header: React.FC<HeaderProps> = ({
           )}
 
           {/* Sync Status */}
-          <OfflineStatus
-            isOnline={isOnline}
-          />
-   
-
-       
+          <OfflineStatus isOnline={isOnline} />
         </div>
 
         {/* Right Section - User Info and Logout */}
@@ -142,7 +140,7 @@ export const Header: React.FC<HeaderProps> = ({
                   </span>
                 </div>
               </div>
-              
+
               <Button
                 onClick={handleLogout}
                 className="flex items-center space-x-1 px-3 py-1 rounded-lg text-sm font-medium bg-red-100 text-red-700 hover:bg-red-200 transition-colors"
@@ -161,12 +159,12 @@ export const Header: React.FC<HeaderProps> = ({
         open={!!initMessage}
         autoHideDuration={6000}
         onClose={() => setInitMessage(null)}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
         <Alert
           onClose={() => setInitMessage(null)}
-          severity={initMessage?.type === 'success' ? 'success' : 'error'}
-          sx={{ width: '100%' }}
+          severity={initMessage?.type === "success" ? "success" : "error"}
+          sx={{ width: "100%" }}
         >
           {initMessage?.text}
         </Alert>
