@@ -23,6 +23,7 @@ import AddIcon from "@mui/icons-material/Add";
 import { visuallyHidden } from "@mui/utils";
 import { getAllUsers } from "../api/sqlite-api/users-api";
 import AddUserModal from "../components/AddUserModal";
+import EditUserModal from "../components/EditUserModal";
 
 // User interface matching API response
 interface User {
@@ -97,6 +98,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
     rowCount,
     onRequestSort,
   } = props;
+  
   const createSortHandler =
     (property: keyof User) => (event: React.MouseEvent<unknown>) => {
       onRequestSort(event, property);
@@ -261,6 +263,8 @@ const Accounts: React.FC = () => {
   const [users, setUsers] = React.useState<User[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [addUserModalOpen, setAddUserModalOpen] = React.useState(false);
+  const [editUserModalOpen, setEditUserModalOpen] = React.useState(false);
+  const [selectedUser, setSelectedUser] = React.useState<User | null>(null);
 
   // Fetch users from API
   React.useEffect(() => {
@@ -354,8 +358,24 @@ const Accounts: React.FC = () => {
   };
 
   const handleEditUser = (user: User) => {
-    // TODO: Implement edit user functionality
-    console.log("Edit user:", user);
+    setSelectedUser(user);
+    setEditUserModalOpen(true);
+  };
+
+  const handleUserUpdated = () => {
+    // Refresh the users list
+    const fetchUsers = async () => {
+      try {
+        setLoading(true);
+        const usersData = await getAllUsers();
+        setUsers(usersData);
+      } catch (error) {
+        console.error("Failed to fetch users:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUsers();
   };
 
   const isSelected = (id: number) => selected.indexOf(id) !== -1;
@@ -505,6 +525,13 @@ const Accounts: React.FC = () => {
         open={addUserModalOpen}
         onClose={() => setAddUserModalOpen(false)}
         onUserCreated={handleUserCreated}
+      />
+      
+      <EditUserModal
+        open={editUserModalOpen}
+        onClose={() => setEditUserModalOpen(false)}
+        onUserUpdated={handleUserUpdated}
+        user={selectedUser}
       />
     </Box>
   );

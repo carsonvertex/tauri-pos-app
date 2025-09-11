@@ -19,4 +19,6 @@ public interface UserService {
     User updateUserById(Integer userid, User user);
 
     void deleteUserById(Integer userid);
+    
+    long countAdminUsers();
 }

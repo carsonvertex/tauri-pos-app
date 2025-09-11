@@ -139,6 +139,19 @@ public class UserController {
     }
 
     /**
+     * Get count of admin users
+     */
+    @GetMapping("/admin-count")
+    public ResponseEntity<Long> getAdminCount() {
+        try {
+            long adminCount = userService.countAdminUsers();
+            return ResponseEntity.ok(adminCount);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
      * Health check endpoint
      */
     @GetMapping("/health")
