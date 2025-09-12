@@ -13,7 +13,7 @@ import { Assessment, Receipt, Dashboard, Sync } from "@mui/icons-material";
 import { Inventory } from "@mui/icons-material";
 import { PointOfSale } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import MenuIcon from '@mui/icons-material/Menu';
+import MenuIcon from "@mui/icons-material/Menu";
 type Anchor = "top" | "left" | "bottom" | "right";
 
 export default function NavDrawer() {
@@ -76,7 +76,7 @@ export default function NavDrawer() {
       permission: PERMISSIONS.USER, // Available to all users
     },
   ];
-  
+
   const tabs = allTabs.filter((tab) => {
     if (!user) return false;
     return hasPermission(user.permission, tab.permission);
@@ -106,12 +106,12 @@ export default function NavDrawer() {
       <List>
         {tabs.map((text, index) => (
           <ListItem key={index} disablePadding>
-            <ListItemButton  onClick={() => {
-              navigate(text.url);
-            }}>
-              <ListItemIcon>
-                {React.createElement(text.icon)}
-              </ListItemIcon>
+            <ListItemButton
+              onClick={() => {
+                navigate(text.url);
+              }}
+            >
+              <ListItemIcon>{React.createElement(text.icon)}</ListItemIcon>
               <ListItemText primary={text.label} />
             </ListItemButton>
           </ListItem>
@@ -121,9 +121,14 @@ export default function NavDrawer() {
   );
 
   return (
-    <div>
+    <div className="w-24 cursor-pointer hover:bg-gray-100   h-full flex items-center justify-center">
       <React.Fragment key="left">
-        <Button    onClick={toggleDrawer("left", true)}><MenuIcon/></Button>
+        <div
+          onClick={toggleDrawer("left", true)}
+          className="   h-full w-full flex items-center justify-center"
+        >
+          <MenuIcon className="w-6 h-6" />
+        </div>
         <Drawer
           anchor="left"
           open={state["left"]}

@@ -38,11 +38,13 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="bg-white shadow-lg border-b border-gray-200  ">
-      <div className="grid grid-cols-12 px-12 bg-amber-500 h-24 flex items-center">
+      <div className="grid grid-cols-12  bg-amber-500 h-18 flex items-center">
         {/* Left Section - App Title */}
-        <div className="col-span-4 mx-4 gap-2 flex items-center space-x-2">
+        <div className="col-span-4 mx-4 gap-2 flex items-center space-x-2 h-full">
           <NavDrawer />
-          <h1 className="text-xl font-bold text-gray-800">RC Mart POS </h1>
+          <h1 className="text-xl font-bold text-gray-800 flex flex-nowrap">
+            RC Mart POS{" "}
+          </h1>
         </div>
 
         {/* Center Section - Status Indicators */}
@@ -111,7 +113,6 @@ export const Header: React.FC<HeaderProps> = ({
               <span>Browser Mode</span>
             </div>
           )}
-
         </div>
 
         {/* Right Section - User Info and Logout */}

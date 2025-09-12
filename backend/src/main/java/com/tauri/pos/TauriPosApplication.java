@@ -17,6 +17,6 @@ public class TauriPosApplication {
     @EventListener(ApplicationReadyEvent.class)
     public void onApplicationReady() {
         System.out.println("🚀 Tauri POS Backend is running on port 8080");
-        System.out.println("🔑 Default credentials: admin/admin123");
+        System.out.println("🔑 Default credentials: admin/password");
     }
 }
